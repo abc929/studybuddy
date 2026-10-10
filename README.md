@@ -1,18 +1,19 @@
 # Cloudberry Study Buddy
 
-A calm, mobile-friendly homeschool study helper for Gabriella. It includes step-by-step hints, practice questions, a simple math checker, a daily checklist, and a note-to-Mom box. It runs entirely in the browser and saves checklist progress on that device.
+A mobile-friendly homeschool companion for Gabriella and Cloudberry Academy.
 
-## Run it
+## What it does
 
-Open `index.html` in a browser.
+- Organizes a simple daily school checklist around her current homeschool subjects.
+- Gives practice questions, hints, and three challenge levels.
+- Uses a small on-device adaptive model to estimate skill readiness and adjust question difficulty from recent answers, hint use, and confidence.
+- Shows skill estimates and recent practice in a parent view.
+- Saves progress on the device. **Share snapshot** creates a link Mom can open from another device; anyone with that link can view the included snapshot.
 
-## Publish with GitHub Pages
+## Current sync limit
 
-After these files are committed to the repository's `main` branch:
+The site is static and does not have a cloud database yet. Progress does not update live across devices. Gabriella (or her caregiver) needs to send Mom a fresh snapshot link to share new activity. Do not put sensitive information in the snapshot.
 
-1. Open **Settings → Pages**.
-2. Under **Build and deployment**, choose **Deploy from a branch**.
-3. Select branch **main** and folder **/(root)**, then save.
-4. GitHub will show the published Pages URL on that page.
+## Run locally
 
-This app has no server or external API.
+Open `index.html` in a browser. The app does not need a server or an account.
