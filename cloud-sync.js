@@ -36,6 +36,11 @@ if (!configured) {
     let stopListening = null;
     let writeChain = Promise.resolve();
     let currentUid = null;
+    const hasActivity = (state) => Boolean(state && (
+      (state.sessions || []).length ||
+      Object.values(state.tasks || {}).some(Boolean) ||
+      Number(state.stars) > 0
+    ));
 
     signInButton?.addEventListener('click', async () => {
       try {
@@ -75,7 +80,11 @@ if (!configured) {
           await dbSdk.setDoc(ref, { state: local, updatedAt: dbSdk.serverTimestamp() });
         } else {
           const remote = firstRead.data()?.state;
-          if (remote && window.cloudberryStateApi?.importState) {
+          const local = window.cloudberryStateApi?.exportState?.();
+          if (!hasActivity(remote) && hasActivity(local)) {
+            // A blank caregiver-device setup must not erase existing study-device progress.
+            await dbSdk.setDoc(ref, { state: local, updatedAt: dbSdk.serverTimestamp() });
+          } else if (remote && window.cloudberryStateApi?.importState) {
             window.cloudberryStateApi.importState(remote);
           }
         }
