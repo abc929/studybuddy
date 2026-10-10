@@ -1,9 +1,8 @@
 // Firebase web configuration for Cloudberry Study Buddy.
-// Fill these values from Firebase Console → Project settings → Your apps.
-// These identifiers are public; never put a service-account key or private credential here.
+// Firebase web identifiers are public; Firestore Security Rules protect progress data.
 export const firebaseConfig = {
-  apiKey: "",
-  authDomain: "",
-  projectId: "",
-  appId: ""
+  apiKey: "AIzaSyBfI8tGuDM3xtezM3rmyo0lQhDh2wlCOM",
+  authDomain: "gabriella-study-buddy.firebaseapp.com",
+  projectId: "gabriella-study-buddy",
+  appId: "1:572946649458:web:4d5a20ea9807924b968deb"
 };
