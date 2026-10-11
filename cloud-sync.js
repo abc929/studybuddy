@@ -59,11 +59,11 @@ if (!configured) {
 
     signInButton?.addEventListener('click', async () => {
       try {
-        status('Opening Google sign-in…');
+        status('Opening Google sign-in… If a new window appears, complete sign-in there.');
         try {
           await authSdk.signInWithPopup(auth, provider);
         } catch (popupError) {
-          if (['auth/popup-blocked', 'auth/operation-not-supported-in-this-environment', 'auth/cancelled-popup-request'].includes(popupError.code)) {
+          if (['auth/popup-blocked', 'auth/operation-not-supported-in-this-environment'].includes(popupError.code)) {
             status('Popup unavailable. Redirecting to Google sign-in…');
             await authSdk.signInWithRedirect(auth, provider);
           } else {
@@ -77,9 +77,13 @@ if (!configured) {
           'auth/operation-not-allowed': 'Google sign-in is not enabled in Firebase Authentication → Sign-in method.',
           'auth/popup-closed-by-user': 'Google sign-in was closed before finishing. Tap Connect with Google to try again.',
           'auth/network-request-failed': 'Google sign-in could not reach the network. Check your connection and retry.',
-          'auth/invalid-api-key': 'Firebase API key was rejected. Check the project configuration.'
+          'auth/invalid-api-key': 'Firebase rejected the app configuration. Please report this error.',
+          'auth/api-key-not-valid.-please-pass-a-valid-api-key.': 'Firebase rejected the app configuration. Please report this error.',
+          'auth/popup-blocked': 'Your browser blocked the Google sign-in window. Allow pop-ups for StudyBuddy, then try again.',
+          'auth/web-storage-unsupported': 'This browser is blocking sign-in storage. Enable cookies/site data for StudyBuddy.',
+          'auth/unauthorized-continue-uri': 'The Google return URL is not authorized in Firebase.'
         };
-        status(messages[error.code] || ('Google sign-in failed: ' + (error.code || 'unknown error') + '. Try opening the site in Chrome.'));
+        status(messages[error.code] || ('Google sign-in failed: ' + (error.code || 'unknown error') + '. Please report this message.'));
       }
     });
     signOutButton?.addEventListener('click', async () => {
