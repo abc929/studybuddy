@@ -35,7 +35,7 @@ if (!configured) {
   status('Cloud sync is not configured yet. Your progress still saves on this device.');
   if (signInButton) signInButton.disabled = true;
 } else {
-  const version = '13.0.0';
+  const version = '12.4.0';
   const base = `https://www.gstatic.com/firebasejs/${version}`;
   try {
     const [appSdk, authSdk, dbSdk] = await Promise.all([
@@ -44,6 +44,23 @@ if (!configured) {
       import(`${base}/firebase-firestore.js`)
     ]);
     const app = appSdk.initializeApp(firebaseConfig);
+    // Probe Firebase Auth directly to distinguish a rejected key from browser sign-in failures.
+    async function checkAuthConfiguration() {
+      try {
+        const endpoint = 'https://identitytoolkit.googleapis.com/v1/projects?key=' + encodeURIComponent(firebaseConfig.apiKey);
+        const response = await fetch(endpoint, {cache:'no-store'});
+        const result = await response.json();
+        if (!response.ok) {
+          const detail = result?.error?.message || ('HTTP ' + response.status);
+          status('Firebase Auth configuration check failed: ' + detail + '.');
+          return false;
+        }
+        return true;
+      } catch (error) {
+        status('Could not contact Firebase Authentication. Check network access and retry.');
+        return false;
+      }
+    }
     const auth = authSdk.getAuth(app);
     const db = dbSdk.getFirestore(app);
     await authSdk.setPersistence(auth, authSdk.browserLocalPersistence);
@@ -59,6 +76,8 @@ if (!configured) {
 
     signInButton?.addEventListener('click', async () => {
       try {
+        status('Checking Firebase Authentication…');
+        if (!await checkAuthConfiguration()) return;
         status('Opening Google sign-in… If a new window appears, complete sign-in there.');
         try {
           await authSdk.signInWithPopup(auth, provider);
@@ -107,7 +126,7 @@ if (!configured) {
       setSignedIn(user);
       setParentAccess(false);
       if (!user) {
-        status('Sign in with the same Google account on Gabriella’s device and Mom’s device to sync.');
+        status('Gabriella signs in with her student Google account; Angela uses her separate parent account.');
         return;
       }
       status('Checking account permissions…');
