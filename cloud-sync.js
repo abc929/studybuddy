@@ -120,6 +120,26 @@ if (!configured) {
       }
     });
 
+    // Test signals live in a separate Firestore document and never touch student state.
+    const testRef = dbSdk.doc(db, 'syncTests', 'cloudberry-parent');
+    let signedInRole = null;
+    const testStatus = document.getElementById('syncTestStatus');
+    const testMessage = message => { if (testStatus) testStatus.textContent = message; };
+    document.getElementById('syncTestWrite')?.addEventListener('click', async () => {
+      if (signedInRole !== 'parent') { testMessage('Parent account required.'); return; }
+      try {
+        const signal = 'TEST-' + Math.random().toString(36).slice(2, 8).toUpperCase();
+        await dbSdk.setDoc(testRef, { signal, sentAt: dbSdk.serverTimestamp(), sentBy: auth.currentUser.uid });
+        testMessage('Test signal sent: ' + signal + '. Open Mom’s View on your other device and tap Check test signal.');
+      } catch (e) { console.error(e); testMessage('Test failed: permission or connection problem. No schoolwork was changed.'); }
+    });
+    document.getElementById('syncTestRead')?.addEventListener('click', async () => {
+      if (signedInRole !== 'parent') { testMessage('Parent account required.'); return; }
+      try {
+        const snap = await dbSdk.getDocFromServer(testRef);
+        testMessage(snap.exists() ? 'Cloud test signal received: ' + snap.data().signal : 'No test signal found yet.');
+      } catch (e) { console.error(e); testMessage('Could not read test signal. Check Firestore permissions and connection.'); }
+    });
     authSdk.getRedirectResult(auth).catch(error => {
       console.error(error);
       status('Google redirect sign-in failed: ' + (error.code || 'unknown error') + '.');
@@ -128,6 +148,7 @@ if (!configured) {
       if (stopListening) stopListening();
       stopListening = null;
       currentUid = user?.uid || null;
+      signedInRole = null;
       setSignedIn(user);
       setParentAccess(false);
       if (!user) {
@@ -142,6 +163,7 @@ if (!configured) {
           status('This Google account has not been assigned a StudyBuddy role. Ask Angela to finish account setup.');
           return;
         }
+        signedInRole = role;
         setParentAccess(role === 'parent');
         const ref = dbSdk.doc(db, 'classrooms', 'cloudberry', 'students', 'gabriella');
         if (role === 'parent') {
