@@ -71,13 +71,18 @@ function nth(y,m,w,n){return 1+(w-new Date(y,m,1).getDay()+7)%7+7*(n-1)}
 function update(){
 const d=new Date(),m=d.getMonth(),day=d.getDate(),y=d.getFullYear();
 date.textContent='📅 '+new Intl.DateTimeFormat('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'}).format(d);
-const holidays={'1-1':"New Year's Day",'2-14':"Valentine's Day",'3-17':"St. Patrick's Day",'4-22':'Earth Day','6-19':'Juneteenth','7-4':'Independence Day','9-17':'Constitution Day','10-11':'National Coming Out Day','10-31':'Halloween','11-11':'Veterans Day','12-25':'Christmas Day'};
+const holidays={'1-1':"New Year's Day",'2-14':"Valentine's Day",'3-14':'Pi Day','3-17':"St. Patrick's Day",'4-22':'Earth Day','5-5':'Cinco de Mayo','6-19':'Juneteenth','7-4':'Independence Day','9-17':'Constitution Day','10-31':'Halloween','11-11':'Veterans Day','12-25':'Christmas Day','12-31':"New Year's Eve"};
 let h=holidays[(m+1)+'-'+day];
 if(m===0&&day===nth(y,0,1,3))h='Martin Luther King Jr. Day';
 if(m===1&&day===nth(y,1,1,3))h="Presidents' Day";
+if(m===4&&day===nth(y,4,1,4))h='Memorial Day';
+if(m===5&&day===nth(y,5,5,1))h='National Donut Day';
 if(m===8&&day===nth(y,8,1,1))h='Labor Day';
 if(m===9&&day===nth(y,9,1,2))h='Indigenous Peoples’ Day / Columbus Day';
 if(m===10&&day===nth(y,10,4,4))h='Thanksgiving Day';
+const monthNames={0:'A new year of learning',1:'Black History Month',2:"Women’s History Month",3:'National Poetry Month',4:'Asian American, Native Hawaiian & Pacific Islander Heritage Month',5:'National Ocean Month',8:'Hispanic Heritage Month begins September 15',9:'Hispanic Heritage Month continues through October 15',10:'Native American Heritage Month',11:'Christmas season'};
+const monthLabel=monthNames[m]||'';
+if(!h&&monthLabel)h=monthLabel;
 event.textContent=h?'✨ Today: '+h:'🌷 A wonderful day to learn and grow!';
 }
 update();document.addEventListener('visibilitychange',()=>{if(!document.hidden)update()});
