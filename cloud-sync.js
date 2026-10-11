@@ -13,6 +13,21 @@ function setSignedIn(user) {
   if (signOutButton) signOutButton.hidden = !user;
   if (accountEl) accountEl.textContent = user ? (user.email || 'Google account') : '';
 }
+const parentView = document.getElementById('mom');
+const parentTab = document.querySelector('[data-view="mom"]');
+function setParentAccess(enabled) {
+  if (parentTab) parentTab.hidden = !enabled;
+  if (parentView) {
+    parentView.hidden = !enabled;
+    if (!enabled && parentView.classList.contains('active')) {
+      parentView.classList.remove('active');
+      document.getElementById('today')?.classList.add('active');
+      document.querySelector('[data-view="today"]')?.classList.add('active');
+    }
+  }
+  document.querySelectorAll('#momGradeDashboard').forEach(el => { el.hidden = !enabled; });
+}
+setParentAccess(false);
 const configured = ['apiKey', 'authDomain', 'projectId', 'appId']
   .every((key) => typeof firebaseConfig[key] === 'string' && firebaseConfig[key].trim());
 
@@ -86,13 +101,34 @@ if (!configured) {
       stopListening = null;
       currentUid = user?.uid || null;
       setSignedIn(user);
+      setParentAccess(false);
       if (!user) {
         status('Sign in with the same Google account on Gabriella’s device and Mom’s device to sync.');
         return;
       }
-      status('Connecting securely…');
+      status('Checking account permissions…');
       try {
-        const ref = dbSdk.doc(db, 'profiles', user.uid);
+        const accessSnap = await dbSdk.getDoc(dbSdk.doc(db, 'access', user.uid));
+        const role = accessSnap.exists() ? accessSnap.data()?.role : null;
+        if (!['student', 'parent'].includes(role)) {
+          status('This Google account has not been assigned a StudyBuddy role. Ask Angela to finish account setup.');
+          return;
+        }
+        setParentAccess(role === 'parent');
+        const ref = dbSdk.doc(db, 'classrooms', 'cloudberry', 'students', 'gabriella');
+        if (role === 'parent') {
+          const parentSnap = await dbSdk.getDoc(ref);
+          if (parentSnap.exists() && window.cloudberryStateApi?.importState) {
+            window.cloudberryStateApi.importState(parentSnap.data()?.state || {});
+          }
+          stopListening = dbSdk.onSnapshot(ref, snap => {
+            if (snap.exists() && window.cloudberryStateApi?.importState) {
+              window.cloudberryStateApi.importState(snap.data()?.state || {});
+            }
+            status('Parent view connected · read-only progress');
+          }, error => { console.error(error); status('Could not load parent view. Check account permissions and Firestore rules.'); });
+          return;
+        }
         const firstRead = await dbSdk.getDoc(ref);
         if (!firstRead.exists()) {
           const local = window.cloudberryStateApi?.exportState?.();
@@ -128,9 +164,9 @@ if (!configured) {
     });
 
     window.addEventListener('cloudberry:save', (event) => {
-      if (!currentUid || !event.detail) return;
+      if (!currentUid || !event.detail || !parentTab?.hidden) return;
       const uid = currentUid;
-      const ref = dbSdk.doc(db, 'profiles', uid);
+      const ref = dbSdk.doc(db, 'classrooms', 'cloudberry', 'students', 'gabriella');
       const snapshot = JSON.parse(JSON.stringify(event.detail));
       writeChain = writeChain.then(() => {
         if (currentUid !== uid) return;
