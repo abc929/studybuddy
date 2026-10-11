@@ -64,30 +64,7 @@ const stories=[
 ["🌼 Día de los Muertos: Marisol's Memory Table",["Marisol carefully placed a photograph of her grandfather on a table covered with bright paper flowers. 'Why do we make an ofrenda?' she asked her mother.","'It's one way our family remembers people we love who have died,' her mother explained. 'We share stories, photographs, and foods that remind us of them.'","Marisol added a drawing of her grandfather's garden. Her brother told a funny story about the time Grandfather grew an enormous pumpkin. Soon everyone was laughing and remembering.","Their family observed Día de los Muertos on November 1 and 2. Marisol understood that the celebration was about memory, love, and connection. It was not simply another name for Halloween.","Talk about it: What object could help someone remember a happy family story?"]],
 ["🎃 Halloween: The Mystery of the Friendly Lantern",["On Halloween night, Nia spotted a lantern flickering beside the library. Under it lay a note: 'Find the missing golden leaf before the clock strikes eight!'","Nia followed a trail of paper bats past the pumpkin display. She heard a creak and froze. Then she noticed the sound came from a loose wooden sign swinging in the breeze.","At the final clue, Nia found the golden leaf taped to a library book. The librarian grinned. 'You solved our autumn mystery!'","Nia realized that being brave did not mean never feeling afraid. It meant looking carefully, asking questions, and taking a safe next step.","Talk about it: How did Nia use evidence instead of letting fear make her decisions?"]]
 ];
-const sel=document.getElementById('storySelect'),area=document.getElementById('storyText');stories.forEach((x,i)=>{const o=document.createElement('option');o.value=i;o.textContent=x[0];sel.appendChild(o)});function render(){const x=stories[+sel.value];area.replaceChildren();const h=document.createElement('h3');h.textContent=x[0];area.appendChild(h);x[1].forEach(p=>{const el=document.createElement('p');el.textContent=p;area.appendChild(el)})}sel.onchange=render;document.getElementById('nextStory').onclick=()=>{sel.selectedIndex=(sel.selectedIndex+1)%stories.length;render()};document.getElementById('printStory').onclick=()=>{const x=stories[+sel.value];const w=window.open('','_blank');if(!w){alert('Please allow pop-ups to print this story.');return}w.document.write('<!doctype html><html><head><title>Cloudberry Reading</title><style>body{font:18px/1.7 Georgia,serif;max-width:720px;margin:45px auto;padding:20px}h1{font: bold 28px Arial}p{margin-bottom:20px}</style></head><body><h1></h1><div id="pages"></div><script>
-(function(){
-const date=document.getElementById('cloudberryTodayDate'),event=document.getElementById('cloudberryTodayOccasion');
-function nth(y,m,w,n){return 1+(w-new Date(y,m,1).getDay()+7)%7+7*(n-1)}
-function update(){
-const d=new Date(),m=d.getMonth(),day=d.getDate(),y=d.getFullYear();
-date.textContent='📅 '+new Intl.DateTimeFormat('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'}).format(d);
-const holidays={'1-1':"New Year's Day",'2-14':"Valentine's Day",'3-14':'Pi Day','3-17':"St. Patrick's Day",'4-22':'Earth Day','5-5':'Cinco de Mayo','6-19':'Juneteenth','7-4':'Independence Day','9-17':'Constitution Day','10-31':'Halloween','11-11':'Veterans Day','12-25':'Christmas Day','12-31':"New Year's Eve"};
-let h=holidays[(m+1)+'-'+day];
-if(m===0&&day===nth(y,0,1,3))h='Martin Luther King Jr. Day';
-if(m===1&&day===nth(y,1,1,3))h="Presidents' Day";
-if(m===4&&day===nth(y,4,1,4))h='Memorial Day';
-if(m===5&&day===nth(y,5,5,1))h='National Donut Day';
-if(m===8&&day===nth(y,8,1,1))h='Labor Day';
-if(m===9&&day===nth(y,9,1,2))h='Indigenous Peoples’ Day / Columbus Day';
-if(m===10&&day===nth(y,10,4,4))h='Thanksgiving Day';
-const monthNames={0:'A new year of learning',1:'Black History Month',2:"Women’s History Month",3:'National Poetry Month',4:'Asian American, Native Hawaiian & Pacific Islander Heritage Month',5:'National Ocean Month',8:'Hispanic Heritage Month begins September 15',9:'Hispanic Heritage Month continues through October 15',10:'Native American Heritage Month',11:'Christmas season'};
-const monthLabel=monthNames[m]||'';
-if(!h&&monthLabel)h=monthLabel;
-event.textContent=h?'✨ Today: '+h:'🌷 A wonderful day to learn and grow!';
-}
-update();document.addEventListener('visibilitychange',()=>{if(!document.hidden)update()});
-})();
-</script></body></html>');w.document.querySelector('h1').textContent=x[0];x[1].forEach(t=>{const p=w.document.createElement('p');p.textContent=t;w.document.getElementById('pages').appendChild(p)});w.document.close();w.focus();w.print()};render();
+const sel=document.getElementById('storySelect'),area=document.getElementById('storyText');stories.forEach((x,i)=>{const o=document.createElement('option');o.value=i;o.textContent=x[0];sel.appendChild(o)});function render(){const x=stories[+sel.value];area.replaceChildren();const h=document.createElement('h3');h.textContent=x[0];area.appendChild(h);x[1].forEach(p=>{const el=document.createElement('p');el.textContent=p;area.appendChild(el)})}sel.onchange=render;document.getElementById('nextStory').onclick=()=>{sel.selectedIndex=(sel.selectedIndex+1)%stories.length;render()};document.getElementById('printStory').onclick=()=>{const x=stories[+sel.value];const w=window.open('','_blank');if(!w){alert('Please allow pop-ups to print this story.');return}w.document.write('<!doctype html><html><head><title>Cloudberry Reading</title><style>body{font:18px/1.7 Georgia,serif;max-width:720px;margin:45px auto;padding:20px}h1{font: bold 28px Arial}p{margin-bottom:20px}</style></head><body><h1></h1><div id="pages"></div></body></html>');w.document.querySelector('h1').textContent=x[0];x[1].forEach(t=>{const p=w.document.createElement('p');p.textContent=t;w.document.getElementById('pages').appendChild(p)});w.document.close();w.focus();w.print()};render();
 })();
 </script><section class="section card" id="readingCheck"><h2>📝 Reading comprehension check</h2><p class="muted">Read the selected passage above first. Then answer these two questions. Your score is saved for Mom.</p><div id="readingQuiz"></div></section><script>
 (function(){
@@ -235,4 +212,27 @@ document.getElementById('shareBtn').onclick=async()=>{let data={v:2,createdAt:ne
 function loadSnapshot(){let hash=location.hash;if(!hash.startsWith('#snapshot='))return;try{let raw=hash.slice(10).replace(/-/g,'+').replace(/_/g,'/');let d=JSON.parse(decodeURIComponent(escape(atob(raw))));if(d.v!==2)return;renderMom(d);document.getElementById('importedSnapshot').classList.remove('hide');document.getElementById('importedSnapshot').innerHTML=`Snapshot received · ${new Date(d.createdAt).toLocaleString()}. This is a read-only copy. Go to <b>Mom’s view</b> to see details.`;switchView('mom')}catch{toast('That progress link could not be opened. Ask Gabriella to make a fresh snapshot.')}}
 render();loadSnapshot();
 })();
-</script><script type="module" src="./cloud-sync.js"></script></body></html>
+</script><script type="module" src="./cloud-sync.js"></script><script>
+(function(){
+const date=document.getElementById('cloudberryTodayDate'),event=document.getElementById('cloudberryTodayOccasion');
+function nth(y,m,w,n){return 1+(w-new Date(y,m,1).getDay()+7)%7+7*(n-1)}
+function update(){
+const d=new Date(),m=d.getMonth(),day=d.getDate(),y=d.getFullYear();
+date.textContent='📅 '+new Intl.DateTimeFormat('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'}).format(d);
+const holidays={'1-1':"New Year's Day",'2-14':"Valentine's Day",'3-14':'Pi Day','3-17':"St. Patrick's Day",'4-22':'Earth Day','5-5':'Cinco de Mayo','6-19':'Juneteenth','7-4':'Independence Day','9-17':'Constitution Day','10-31':'Halloween','11-11':'Veterans Day','12-25':'Christmas Day','12-31':"New Year's Eve"};
+let h=holidays[(m+1)+'-'+day];
+if(m===0&&day===nth(y,0,1,3))h='Martin Luther King Jr. Day';
+if(m===1&&day===nth(y,1,1,3))h="Presidents' Day";
+if(m===4&&day===nth(y,4,1,4))h='Memorial Day';
+if(m===5&&day===nth(y,5,5,1))h='National Donut Day';
+if(m===8&&day===nth(y,8,1,1))h='Labor Day';
+if(m===9&&day===nth(y,9,1,2))h='Indigenous Peoples’ Day / Columbus Day';
+if(m===10&&day===nth(y,10,4,4))h='Thanksgiving Day';
+const monthNames={0:'A new year of learning',1:'Black History Month',2:"Women’s History Month",3:'National Poetry Month',4:'Asian American, Native Hawaiian & Pacific Islander Heritage Month',5:'National Ocean Month',8:'Hispanic Heritage Month begins September 15',9:'Hispanic Heritage Month continues through October 15',10:'Native American Heritage Month',11:'Christmas season'};
+const monthLabel=monthNames[m]||'';
+if(!h&&monthLabel)h=monthLabel;
+event.textContent=h?'✨ Today: '+h:'🌷 A wonderful day to learn and grow!';
+}
+update();document.addEventListener('visibilitychange',()=>{if(!document.hidden)update()});
+})();
+</script></body></html>
