@@ -63,7 +63,8 @@ if (!configured) {
     }
     const auth = authSdk.getAuth(app);
     const db = dbSdk.getFirestore(app);
-    await authSdk.setPersistence(auth, authSdk.browserLocalPersistence);
+    // Do not force persistence before the user initiates sign-in: a failed Auth init can block diagnostics.
+    // Firebase Auth uses browser-local persistence by default on supported browsers.
     const provider = new authSdk.GoogleAuthProvider();
     let stopListening = null;
     let writeChain = Promise.resolve();
