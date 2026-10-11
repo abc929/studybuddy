@@ -4,5 +4,7 @@ export const firebaseConfig = {
   apiKey: "AIzaSyBfI8tGuDM3xtezM3rmyoOlqOhDh2wlCOM",
   authDomain: "gabriella-study-buddy.firebaseapp.com",
   projectId: "gabriella-study-buddy",
+  storageBucket: "gabriella-study-buddy.firebasestorage.app",
+  messagingSenderId: "572946649458",
   appId: "1:572946649458:web:4d5a20ea9807924b968deb"
 };
