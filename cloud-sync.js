@@ -45,10 +45,26 @@ if (!configured) {
     signInButton?.addEventListener('click', async () => {
       try {
         status('Opening Google sign-in…');
-        await authSdk.signInWithRedirect(auth, provider);
+        try {
+          await authSdk.signInWithPopup(auth, provider);
+        } catch (popupError) {
+          if (['auth/popup-blocked', 'auth/operation-not-supported-in-this-environment', 'auth/cancelled-popup-request'].includes(popupError.code)) {
+            status('Popup unavailable. Redirecting to Google sign-in…');
+            await authSdk.signInWithRedirect(auth, provider);
+          } else {
+            throw popupError;
+          }
+        }
       } catch (error) {
         console.error(error);
-        status('Sign-in did not open. Please try again.');
+        const messages = {
+          'auth/unauthorized-domain': 'This website is not authorized in Firebase. Add abc929.github.io under Authentication → Settings → Authorized domains.',
+          'auth/operation-not-allowed': 'Google sign-in is not enabled in Firebase Authentication → Sign-in method.',
+          'auth/popup-closed-by-user': 'Google sign-in was closed before finishing. Tap Connect with Google to try again.',
+          'auth/network-request-failed': 'Google sign-in could not reach the network. Check your connection and retry.',
+          'auth/invalid-api-key': 'Firebase API key was rejected. Check the project configuration.'
+        };
+        status(messages[error.code] || ('Google sign-in failed: ' + (error.code || 'unknown error') + '. Try opening the site in Chrome.'));
       }
     });
     signOutButton?.addEventListener('click', async () => {
@@ -61,6 +77,10 @@ if (!configured) {
       }
     });
 
+    authSdk.getRedirectResult(auth).catch(error => {
+      console.error(error);
+      status('Google redirect sign-in failed: ' + (error.code || 'unknown error') + '.');
+    });
     authSdk.onAuthStateChanged(auth, async (user) => {
       if (stopListening) stopListening();
       stopListening = null;
