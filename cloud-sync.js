@@ -36,6 +36,7 @@ if (!configured) {
   if (signInButton) signInButton.disabled = true;
 } else {
   const version = '12.4.0';
+  status('Cloud connection code loaded · diagnostic v2');
   const base = `https://www.gstatic.com/firebasejs/${version}`;
   try {
     const [appSdk, authSdk, dbSdk] = await Promise.all([
@@ -61,8 +62,10 @@ if (!configured) {
         return false;
       }
     }
+    status('Firebase app loaded · checking Auth initialization');
     const auth = authSdk.getAuth(app);
     const db = dbSdk.getFirestore(app);
+    status('Firebase initialized · ready for Google sign-in');
     // Do not force persistence before the user initiates sign-in: a failed Auth init can block diagnostics.
     // Firebase Auth uses browser-local persistence by default on supported browsers.
     const provider = new authSdk.GoogleAuthProvider();
@@ -79,6 +82,7 @@ if (!configured) {
       try {
         status('Checking Firebase Authentication…');
         if (!await checkAuthConfiguration()) return;
+        status('Firebase key check passed · opening Google sign-in');
         status('Opening Google sign-in… If a new window appears, complete sign-in there.');
         try {
           await authSdk.signInWithPopup(auth, provider);
@@ -103,7 +107,7 @@ if (!configured) {
           'auth/web-storage-unsupported': 'This browser is blocking sign-in storage. Enable cookies/site data for StudyBuddy.',
           'auth/unauthorized-continue-uri': 'The Google return URL is not authorized in Firebase.'
         };
-        status(messages[error.code] || ('Google sign-in failed: ' + (error.code || 'unknown error') + '. Please report this message.'));
+        status((messages[error.code] || 'Google sign-in failed.') + ' [Step: Google popup; code: ' + (error.code || 'unknown') + '; details: ' + String(error.message || '').slice(0,180) + ']');
       }
     });
     signOutButton?.addEventListener('click', async () => {
@@ -205,7 +209,7 @@ if (!configured) {
     });
   } catch (error) {
     console.error(error);
-    status('Cloud sync could not start. Local saving still works.');
+    status('Firebase initialization failed: ' + (error.code || 'unknown') + ' · ' + String(error.message || '').slice(0,200) + '. Local saving still works.');
     if (signInButton) signInButton.disabled = true;
   }
 }
