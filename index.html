@@ -282,7 +282,7 @@ if(assigned){const wrap=document.createElement('div');wrap.style.cssText='paddin
 })();
 </script><script>
 (function(){
-const story=document.getElementById('bjuStory'),word=document.getElementById('bjuWord'),btn=document.getElementById('bjuSpeak'),status=document.getElementById('bjuSpeechStatus');if(!story||!word||!btn)return;
+const story=document.getElementById('bjuStory'),status=document.getElementById('bjuSpeechStatus');if(!story)return;
 const today=new Date(),iso=[today.getFullYear(),String(today.getMonth()+1).padStart(2,'0'),String(today.getDate()).padStart(2,'0')].join('-');
 const stories=[
 ['2026-10-12','The Elephant · The Vulture · The Scorpion',24,'Poetry'],
@@ -315,20 +315,60 @@ const stories=[
 ['2026-12-04','Holy Celebrations in Israel',248,'Informational text'],
 ['2026-12-07','Invitation to Praise',260,'Responsive reading']
 ];
-let current=stories.filter(x=>x[0]<=iso).slice(-1)[0];if(!current)current=stories[0];
-const completed=['Where the Red Fern Grows (page 2)','The Story of How a Girl Brought Joy to the Heart of the King (page 72)'];
+
+
 const support={
 'The Elephant · The Vulture · The Scorpion':{words:[],focus:'Poetry · tone, mood, and vivid language',definition:'Poetry expresses ideas and feelings, often in a few lines. Poems use word sounds, rhythm, and imagery to help readers picture what they describe.',concept:'Tone is how the author feels about the subject. Mood is how the writing makes the reader feel.',questions:['What tone does each poem have? What words helped you decide?','How does each poem make you feel?','What vivid descriptions or sounds do you notice?']},
-'Monkey and Crocodiles':{words:['animated','brilliant','fashion','intense','lectern','simulate'],focus:'Reader’s theater · trickster folktale',definition:'Reader’s theater is a story performed by reading a script aloud, using the voice to show the characters and action, usually with few or no costumes or props.',concept:'A trickster tale is a folktale in which a character outsmarts another, often using wit. Such stories may teach lessons about what a culture values.',questions:['Who is the trickster in the story?','How does the trickster solve the problem?','What lesson or value does the story suggest?']},
+'Monkey and Crocodiles':{words:[],focus:'Reader’s theater · trickster folktale',definition:'Reader’s theater is a story performed by reading a script aloud, using the voice to show the characters and action, usually with few or no costumes or props.',concept:'A trickster tale is a folktale in which a character outsmarts another, often using wit. Such stories may teach lessons about what a culture values.',questions:['Who is the trickster in the story?','How does the trickster solve the problem?','What lesson or value does the story suggest?']},
 'Chinchilla!':{words:['chaos','frantic','gushed','pursuit','typical'],focus:'Realistic fiction · point of view',definition:'Realistic fiction is a made-up story that could happen in real life.',concept:'Point of view tells who narrates a story. First person uses I, me, my, and we; third person uses he, she, and they.',questions:['From whose point of view is the story told?','What traits does Violet show? Give an example from the story.','What makes the story funny?','How do the bride and groom react to the interruption?','What is the theme of the story?']},
 'Listening to Crickets':{words:['adequately','aviation','basked','clamored','complemented','hallowed','posthumously','prose','rambled','ruckus','touted'],focus:'Biography · identifying an author’s worldview',definition:'A biography tells the story of a real person’s life and is written by someone else.',concept:'Worldview means the beliefs and ideas through which someone understands the world. Look for words that reveal the author’s perspective.',questions:['What words show how Rachel felt about nature?','What childhood experiences influenced Rachel’s interests?','Describe two of Rachel’s character traits.','How did Rachel’s work affect people and animals?','What responsibility toward creation does the selection describe?']},
 'Grandmother Spider Steals the Sun':{words:['animated','brilliant','fashion','intense','lectern','simulate'],focus:'Reader’s theater · trickster tales (shared vocabulary with Monkey and Crocodiles)',definition:'Reader’s theater is a simple performance in which people read from a script. Their voices express the drama; few props or costumes are needed.',concept:'A trickster tale is a folktale where a character uses cleverness to outsmart others. Such stories often reflect cultural values and teach a lesson.',questions:['How is reader’s theater different from a play?','What makes a character a trickster?','What problem does Grandmother Spider face and how is it solved?','Compare this story with Monkey and Crocodiles, if you have read both.','What values do the characters demonstrate?']}
 };
-const data=support[current[1]];
-story.innerHTML='<p><b>Suggested reading:</b> '+current[1]+'</p><p>📖 <b>Open BJU Reading 5 to page '+current[2]+'</b> · '+current[3]+'</p><p class="tiny muted">One complete story per assigned day. Previously completed: '+completed.join('; ')+'.</p>'+(data?'<p><b>Before reading · Genre and skill:</b> '+data.focus+'</p>'+(data.definition?'<p><b>What this kind of reading means:</b> '+data.definition+'</p>':'')+(data.concept?'<p><b>Reading tip:</b> '+data.concept+'</p>':'')+(data.words.length?'<h3>🔊 Tap a word to hear it</h3>':'')<div id="bjuWordButtons" style="display:flex;flex-wrap:wrap;gap:8px"></div><h3>After-reading questions</h3><ol>'+data.questions.map(q=>'<li style="margin:8px 0">'+q+'</li>').join('')+'</ol>':'<p class="muted">Vocabulary buttons will appear when the words for this story are added.</p>');
-function speak(v){if(!('speechSynthesis' in window)){status.textContent='Audio pronunciation is not supported in this browser.';return}speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(v);u.lang='en-US';u.rate=.82;speechSynthesis.speak(u);status.textContent='🔊 '+v;}
-if(data){const wrap=document.getElementById('bjuWordButtons');data.words.forEach(v=>{const b=document.createElement('button');b.type='button';b.className='soft';b.textContent='🔊 '+v;b.addEventListener('click',()=>{word.value=v;speak(v)});wrap.appendChild(b)})}
-btn.addEventListener('click',()=>{const v=word.value.trim();if(!v){status.textContent='Type a word first.';return}speak(v)});
 
+const definitions={chaos:'complete confusion or disorder',frantic:'wild with worry, fear, or excitement',gushed:'flowed or poured out suddenly',pursuit:'the act of chasing or trying to reach something',typical:'usual or expected',adequately:'well enough for a particular purpose',aviation:'the activity of flying aircraft',basked:'rested or enjoyed warmth or attention',clamored:'shouted or made loud demands',complemented:'made something better by adding to it',hallowed:'honored as holy or greatly respected',posthumously:'happening or given after someone has died',prose:'ordinary written or spoken language, not poetry',rambled:'talked or wandered without a clear direction',ruckus:'a noisy disturbance',touted:'praised or promoted enthusiastically',animated:'full of life or energy',brilliant:'very bright or very clever',fashion:'a way of making or doing something',intense:'very strong or extreme',lectern:'a stand that holds notes or a book for a speaker',simulate:'to imitate or act out something'};
+const assigned=stories.find(x=>x[0]===iso);
+const data=assigned&&support[assigned[1]];
+const section=document.getElementById('bjuReading');
+const oldInput=document.getElementById('bjuWord'),oldButton=document.getElementById('bjuSpeak');
+if(oldInput){const label=section.querySelector('label[for="bjuWord"]');if(label)label.remove();oldInput.remove()}
+if(oldButton)oldButton.remove();
+function speak(word,button){
+ if(!('speechSynthesis' in window)){if(status)status.textContent='Audio is unavailable in this browser.';return}
+ window.speechSynthesis.cancel();
+ const utterance=new SpeechSynthesisUtterance(word);utterance.lang='en-US';utterance.rate=0.82;
+ utterance.onerror=()=>{if(status)status.textContent='Audio could not play. Check your device volume.'};
+ window.speechSynthesis.speak(utterance);
+ if(status)status.textContent='Playing: '+word;
+}
+function wordList(target,words){
+ if(!words.length){const p=document.createElement('p');p.textContent='No vocabulary words for this poetry selection.';target.appendChild(p);return}
+ words.forEach(word=>{
+ const row=document.createElement('div');row.style.cssText='padding:10px 0;border-bottom:1px solid #eedfe6';
+ const button=document.createElement('button');button.type='button';button.className='soft';button.textContent='🔊 '+word;button.addEventListener('click',()=>speak(word,button));
+ const meaning=document.createElement('span');meaning.textContent=' — '+(definitions[word]||'Definition coming soon.');
+ row.appendChild(button);row.appendChild(meaning);target.appendChild(row);
+ });
+}
+if(!assigned){
+ story.innerHTML='<p><b>No new BJU story assigned today.</b> Your next scheduled story will appear on its reading day.</p>';
+}else{
+ story.innerHTML='<h3>'+assigned[1]+'</h3><p>📖 Open your book to <b>page '+assigned[2]+'</b> · '+assigned[3]+'</p>';
+ if(data){
+ const intro=document.createElement('div');
+ intro.innerHTML='<h3>Before reading</h3><p><b>Genre and skill:</b> '+data.focus+'</p><p><b>Genre definition:</b> '+data.definition+'</p><p><b>Reading focus:</b> '+data.concept+'</p>';
+ story.appendChild(intro);
+ const title=document.createElement('h3');title.textContent='🔊 Vocabulary: tap to hear and learn';story.appendChild(title);
+ wordList(story,data.words);
+ const after=document.createElement('div');after.innerHTML='<h3>After-reading questions</h3>';
+ const ol=document.createElement('ol');data.questions.forEach(q=>{const li=document.createElement('li');li.textContent=q;ol.appendChild(li)});after.appendChild(ol);story.appendChild(after);
+ }else{const p=document.createElement('p');p.textContent='Before-reading guidance and vocabulary for this selection are not yet available.';story.appendChild(p)}
+}
+const plan=document.getElementById('lessonPlanToday');
+if(plan&&assigned&&data){
+ const duplicate=plan.querySelector('#planVocab');if(duplicate){const parent=duplicate.parentElement;parent.remove()}
+ const card=document.createElement('div');card.style.cssText='margin:12px 0;padding:12px;border:1px solid #e9c68e;border-radius:12px;background:#fffaf1';
+ card.innerHTML='<h3>📚 Reading guide: '+assigned[1]+'</h3><p><b>'+data.focus+'</b></p><p>'+data.definition+'</p><p>'+data.concept+'</p><h4>Vocabulary and meanings</h4>';
+ wordList(card,data.words);plan.appendChild(card);
+}
 })();
 </script></body></html>
