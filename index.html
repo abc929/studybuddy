@@ -307,7 +307,16 @@ const stories=[
 ];
 let current=stories.filter(x=>x[0]<=iso).slice(-1)[0];if(!current)current=stories[0];
 const completed=['Where the Red Fern Grows (page 2)','The Story of How a Girl Brought Joy to the Heart of the King (page 72)'];
-story.innerHTML='<p><b>Suggested reading:</b> '+current[1]+'</p><p>📖 <b>Open BJU Reading 5 to page '+current[2]+'</b> · '+current[3]+'</p><p class="tiny muted">Seasonal suggestion; confirm the next unread story with Mom. Previously completed: '+completed.join('; ')+'.</p>';
-btn.addEventListener('click',()=>{const v=word.value.trim();if(!v){status.textContent='Type a word first.';return}if(!('speechSynthesis' in window)){status.textContent='Audio pronunciation is not supported in this browser.';return}speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(v);u.lang='en-US';u.rate=.82;speechSynthesis.speak(u);status.textContent='🔊 '+v});
+const support={
+'Chinchilla!':{words:['chaos','frantic','gushed','pursuit','typical'],focus:'Point of view · first-person versus third-person',questions:['From whose point of view is the story told?','What traits does Violet show? Give an example from the story.','What makes the story funny?','How do the bride and groom react to the interruption?','What is the theme of the story?']},
+'Listening to Crickets':{words:['adequately','aviation','basked','clamored','complemented','hallowed','posthumously','prose','rambled','ruckus','touted'],focus:'Biography · identifying an author’s worldview',questions:['What words show how Rachel felt about nature?','What childhood experiences influenced Rachel’s interests?','Describe two of Rachel’s character traits.','How did Rachel’s work affect people and animals?','What responsibility toward creation does the selection describe?']},
+'Grandmother Spider Steals the Sun':{words:['animated','brilliant','fashion','intense','lectern','simulate'],focus:'Reader’s theater · trickster tales (shared vocabulary with Monkey and Crocodiles)',questions:['How is reader’s theater different from a play?','What makes a character a trickster?','What problem does Grandmother Spider face and how is it solved?','Compare this story with Monkey and Crocodiles, if you have read both.','What values do the characters demonstrate?']}
+};
+const data=support[current[1]];
+story.innerHTML='<p><b>Suggested reading:</b> '+current[1]+'</p><p>📖 <b>Open BJU Reading 5 to page '+current[2]+'</b> · '+current[3]+'</p><p class="tiny muted">One complete story per assigned day. Previously completed: '+completed.join('; ')+'.</p>'+(data?'<p><b>Reading focus:</b> '+data.focus+'</p><h3>🔊 Tap a word to hear it</h3><div id="bjuWordButtons" style="display:flex;flex-wrap:wrap;gap:8px"></div><h3>After-reading questions</h3><ol>'+data.questions.map(q=>'<li style="margin:8px 0">'+q+'</li>').join('')+'</ol>':'<p class="muted">Vocabulary buttons will appear when the words for this story are added.</p>');
+function speak(v){if(!('speechSynthesis' in window)){status.textContent='Audio pronunciation is not supported in this browser.';return}speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(v);u.lang='en-US';u.rate=.82;speechSynthesis.speak(u);status.textContent='🔊 '+v;}
+if(data){const wrap=document.getElementById('bjuWordButtons');data.words.forEach(v=>{const b=document.createElement('button');b.type='button';b.className='soft';b.textContent='🔊 '+v;b.addEventListener('click',()=>{word.value=v;speak(v)});wrap.appendChild(b)})}
+btn.addEventListener('click',()=>{const v=word.value.trim();if(!v){status.textContent='Type a word first.';return}speak(v)});
+
 })();
 </script></body></html>
