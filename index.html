@@ -326,7 +326,18 @@ const support={
 };
 
 const definitions={chaos:'complete confusion or disorder',frantic:'wild with worry, fear, or excitement',gushed:'flowed or poured out suddenly',pursuit:'the act of chasing or trying to reach something',typical:'usual or expected',adequately:'well enough for a particular purpose',aviation:'the activity of flying aircraft',basked:'rested or enjoyed warmth or attention',clamored:'shouted or made loud demands',complemented:'made something better by adding to it',hallowed:'honored as holy or greatly respected',posthumously:'happening or given after someone has died',prose:'ordinary written or spoken language, not poetry',rambled:'talked or wandered without a clear direction',ruckus:'a noisy disturbance',touted:'praised or promoted enthusiastically',animated:'full of life or energy',brilliant:'very bright or very clever',fashion:'a way of making or doing something',intense:'very strong or extreme',lectern:'a stand that holds notes or a book for a speaker',simulate:'to imitate or act out something'};
-const assigned=stories.find(x=>x[0]===iso);
+const readingDays={
+'2026-10-12':['The Elephant · The Vulture · The Scorpion',24,25,'Poetry'],
+'2026-10-14':['Chinchilla!',26,35,'Realistic fiction'],
+'2026-10-15':['Listening to Crickets',36,43,'Biography'],
+'2026-10-16':['Listening to Crickets',44,51,'Biography'],
+'2026-10-19':['Grandmother Spider Steals the Sun',58,63,'Reader’s theater']
+};
+const dayPlan=readingDays[iso];
+const assigned=dayPlan?[iso,dayPlan[0],dayPlan[1],dayPlan[3]]:stories.find(x=>x[0]===iso);
+const readingEnd=dayPlan?dayPlan[2]:null;
+const lastPart=!dayPlan || !['2026-10-15'].includes(iso);
+
 const data=assigned&&support[assigned[1]];
 const section=document.getElementById('bjuReading');
 const oldInput=document.getElementById('bjuWord'),oldButton=document.getElementById('bjuSpeak');
@@ -352,7 +363,7 @@ function wordList(target,words){
 if(!assigned){
  story.innerHTML='<p><b>No new BJU story assigned today.</b> Your next scheduled story will appear on its reading day.</p>';
 }else{
- story.innerHTML='<h3>'+assigned[1]+'</h3><p>📖 Open your book to <b>page '+assigned[2]+'</b> · '+assigned[3]+'</p>';
+ story.innerHTML='<h3>'+assigned[1]+'</h3><p>📖 Read <b>pages '+assigned[2]+(readingEnd?'–'+readingEnd:' onward')+'</b> · '+assigned[3]+'</p>'+(!lastPart?'<p>Continue this selection on your next reading day. Answer the questions after the final part.</p>':'');
  if(data){
  const intro=document.createElement('div');
  intro.innerHTML='<h3>Before reading</h3><p><b>Genre and skill:</b> '+data.focus+'</p><p><b>Genre definition:</b> '+data.definition+'</p><p><b>Reading focus:</b> '+data.concept+'</p>';
@@ -360,14 +371,48 @@ if(!assigned){
  const title=document.createElement('h3');title.textContent='🔊 Vocabulary: tap to hear and learn';story.appendChild(title);
  wordList(story,data.words);
  const after=document.createElement('div');after.innerHTML='<h3>After-reading questions</h3>';
- const ol=document.createElement('ol');data.questions.forEach(q=>{const li=document.createElement('li');li.textContent=q;ol.appendChild(li)});after.appendChild(ol);story.appendChild(after);
+ const ol=document.createElement('ol');data.questions.forEach(q=>{const li=document.createElement('li');li.textContent=q;ol.appendChild(li)});after.appendChild(ol);story.appendChild(after);after.style.display=lastPart?'':'none';if(lastPart)addWrittenAnswers(after,assigned[1],data.questions);
  }else{const p=document.createElement('p');p.textContent='Before-reading guidance and vocabulary for this selection are not yet available.';story.appendChild(p)}
+}
+function addWrittenAnswers(container,title,questions){
+ const key='cloudberry:bju:answers:'+title;
+ let saved={};try{saved=JSON.parse(localStorage.getItem(key)||'{}')||{}}catch(e){}
+ const form=document.createElement('form');form.noValidate=true;
+ const messages=[];
+ questions.forEach((question,i)=>{
+  const group=document.createElement('div');group.style.cssText='margin:16px 0;padding:12px;border:1px solid #e8cde0;border-radius:12px';
+  const label=document.createElement('label');label.textContent=(i+1)+'. '+question;label.style.display='block';label.style.fontWeight='600';
+  const field=document.createElement('textarea');field.rows=3;field.style.cssText='width:100%;box-sizing:border-box;margin-top:8px;padding:12px;border:1px solid #aa9bab;border-radius:10px;font:inherit';field.value=saved[i]||'';field.placeholder='Write your answer in complete sentences.';
+  const feedback=document.createElement('p');feedback.className='tiny';feedback.setAttribute('aria-live','polite');
+  const check=document.createElement('button');check.type='button';check.className='soft';check.textContent='Check my writing';
+  function evaluate(){
+   const v=field.value.trim(),issues=[];
+   if(!v)issues.push('Write an answer first.');
+   else{
+    if(!/^[A-Z]/.test(v))issues.push('Start your sentence with a capital letter.');
+    if(!/[.!?]["’']?$/.test(v))issues.push('End your answer with punctuation.');
+    if(/\\bi\\b/.test(v))issues.push('Capitalize the word “I.”');
+    if(/ {2,}/.test(v))issues.push('Remove extra spaces.');
+    if(/\\b(\\w+)\\s+\\1\\b/i.test(v))issues.push('Check for a repeated word.');
+    if(v.split(/\\s+/).length<4)issues.push('Try answering in a complete sentence with more detail.');
+   }
+   feedback.textContent=issues.length?issues.join(' '):'✓ Basic capitalization and punctuation checks passed. Reread for grammar and make sure your answer matches the story.';
+   return !issues.length;
+  }
+  field.addEventListener('input',()=>{saved[i]=field.value;try{localStorage.setItem(key,JSON.stringify(saved))}catch(e){};feedback.textContent='Draft saved on this device.'});
+  check.addEventListener('click',evaluate);
+  group.append(label,field,check,feedback);form.appendChild(group);messages.push({evaluate,feedback});
+ });
+ const submit=document.createElement('button');submit.type='submit';submit.className='soft';submit.textContent='📨 Submit my answers';
+ const result=document.createElement('p');result.setAttribute('aria-live','polite');form.append(submit,result);
+ form.addEventListener('submit',e=>{e.preventDefault();const ok=messages.every(m=>m.evaluate());if(!ok){result.textContent='Please revise the highlighted answers before submitting.';return}try{localStorage.setItem(key+':submitted',new Date().toISOString());localStorage.setItem(key,JSON.stringify(saved));result.textContent='✓ Answers submitted and saved on this device for review. Writing checks do not verify factual correctness.'}catch(e){result.textContent='Could not save answers. Please check browser storage.'}});
+ container.appendChild(form);
 }
 const plan=document.getElementById('lessonPlanToday');
 if(plan&&assigned&&data){
  const duplicate=plan.querySelector('#planVocab');if(duplicate){const parent=duplicate.parentElement;parent.remove()}
  const card=document.createElement('div');card.style.cssText='margin:12px 0;padding:12px;border:1px solid #e9c68e;border-radius:12px;background:#fffaf1';
- card.innerHTML='<h3>📚 Reading guide: '+assigned[1]+'</h3><p><b>'+data.focus+'</b></p><p>'+data.definition+'</p><p>'+data.concept+'</p><h4>Vocabulary and meanings</h4>';
+ card.innerHTML='<h3>📚 Reading guide: '+assigned[1]+'</h3><p><b>Today: pages '+assigned[2]+(readingEnd?'–'+readingEnd:' onward')+'</b></p><p><b>'+data.focus+'</b></p><p>'+data.definition+'</p><p>'+data.concept+'</p><h4>Vocabulary and meanings</h4>';
  wordList(card,data.words);plan.appendChild(card);
 }
 })();
