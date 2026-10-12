@@ -254,12 +254,12 @@ const tasks=day===0||day===6?[]:isCoop?[
 ['🙏 11:00 · Prayer and gratitude',''],
 ['🧪 Co-op · Science, cryptology, Strong Minds and clay',''],
 ['➗ '+math,''],
-['📚 BJU Reading 5 · seasonal story (title and pages to be confirmed)','']
+['📚 BJU Reading 5 · no new story scheduled for co-op day','']
 ]:[
 ['🙏 11:00 · Prayer and daily goals',''],
 ['🍽️ 11:15 · Breakfast',''],
 ['📖 11:35 · The Good and the Beautiful Grade 5 · assigned lesson','https://www.goodandbeautiful.com/'],
-['📚 12:10 · BJU Reading 5 · seasonal story (title and pages to be confirmed)',''],
+['📚 12:10 · BJU Reading 5 · see today’s story and vocabulary below',''],
 ['🔬 12:35 · Miacademy Structures of Science · assigned lesson','https://www.miacademy.co/'],
 ['🥗 1:15 · Lunch and break',''],
 ['➗ 2:00 · '+math,''],
@@ -318,6 +318,17 @@ const data=support[current[1]];
 story.innerHTML='<p><b>Suggested reading:</b> '+current[1]+'</p><p>📖 <b>Open BJU Reading 5 to page '+current[2]+'</b> · '+current[3]+'</p><p class="tiny muted">One complete story per assigned day. Previously completed: '+completed.join('; ')+'.</p>'+(data?'<p><b>Before reading · Genre and skill:</b> '+data.focus+'</p>'+(data.definition?'<p><b>What this kind of reading means:</b> '+data.definition+'</p>':'')+(data.concept?'<p><b>Reading tip:</b> '+data.concept+'</p>':'')+(data.words.length?'<h3>🔊 Tap a word to hear it</h3>':'')<div id="bjuWordButtons" style="display:flex;flex-wrap:wrap;gap:8px"></div><h3>After-reading questions</h3><ol>'+data.questions.map(q=>'<li style="margin:8px 0">'+q+'</li>').join('')+'</ol>':'<p class="muted">Vocabulary buttons will appear when the words for this story are added.</p>');
 function speak(v){if(!('speechSynthesis' in window)){status.textContent='Audio pronunciation is not supported in this browser.';return}speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(v);u.lang='en-US';u.rate=.82;speechSynthesis.speak(u);status.textContent='🔊 '+v;}
 if(data){const wrap=document.getElementById('bjuWordButtons');data.words.forEach(v=>{const b=document.createElement('button');b.type='button';b.className='soft';b.textContent='🔊 '+v;b.addEventListener('click',()=>{word.value=v;speak(v)});wrap.appendChild(b)})}
+const planBox=document.getElementById('lessonPlanToday');
+if(planBox && today.getDay()!==0 && today.getDay()!==6){
+ const scheduled=stories.find(x=>x[0]===iso);
+ const vocab=support[scheduled?.[1]]?.words||[];
+ const daily=document.createElement('div');daily.id='dailyBjuAssignment';daily.style.cssText='margin:14px 0;padding:14px;border:2px solid #e9c68e;border-radius:16px;background:#fff9e9';
+ if(scheduled){
+ daily.innerHTML='<h3>📚 Today’s BJU Reading 5</h3><p><b>'+scheduled[1]+'</b> · Start on page <b>'+scheduled[2]+'</b> · '+scheduled[3]+'</p><p><b>Vocabulary:</b> '+(vocab.length?'Tap any word below to hear it.':'No vocabulary words assigned for this poetry selection.')+'</p><div id="dailyBjuWords" style="display:flex;gap:8px;flex-wrap:wrap"></div><p class="tiny muted">Read the entire story today. The reading focus and questions are below.</p>';
+ }else{daily.innerHTML='<p>📚 <b>BJU Reading 5:</b> No new story assigned today.</p>'}
+ planBox.appendChild(daily);
+ if(scheduled&&vocab.length){const target=daily.querySelector('#dailyBjuWords');vocab.forEach(v=>{const b=document.createElement('button');b.type='button';b.className='soft';b.textContent='🔊 '+v;b.addEventListener('click',()=>{word.value=v;speak(v)});target.appendChild(b)})}
+}
 btn.addEventListener('click',()=>{const v=word.value.trim();if(!v){status.textContent='Type a word first.';return}speak(v)});
 
 })();
