@@ -471,20 +471,29 @@ function addWrittenAnswers(container,title,questions){
   const feedback=document.createElement('p');feedback.className='tiny';feedback.setAttribute('aria-live','polite');
   const check=document.createElement('button');check.type='button';check.className='soft';check.textContent='Check my writing';
   function evaluate(){
-   const v=field.value.trim(),issues=[];
-   if(!v)issues.push('Write your answer before submitting.');
+   const v=field.value.trim(),lower=v.toLowerCase(),q=question.toLowerCase(),issues=[];
+   const words=v.split(' ').filter(Boolean);
+   if(!v){issues.push('Write your answer first.');}
    else{
-    if(!/^[A-Z]/.test(v))issues.push('Begin with a capital letter.');
-    if(!/[.!?][\"’']?$/.test(v))issues.push('Add ending punctuation.');
-    if(/\\bi\\b/.test(v))issues.push('Capitalize the word I.');
-    if(/ {2,}/.test(v))issues.push('Remove extra spaces.');
-    if(/\\b(\\w+)\\s+\\1\\b/i.test(v))issues.push('Check for a repeated word.');
-    if(v.split(/\\s+/).length<4)issues.push('Add a little more explanation or an example.');
-    if(/\\bbereavement\\b/i.test(v))issues.push('Did you mean bravery rather than bereavement?');
-    if(/theme/i.test(question)&&/\\b(wedding|realistic fiction|denver|colorado)\\b/i.test(v))issues.push('Theme is the message or lesson, not the topic, genre, or setting. What did the character learn?');
-    if(/traits/i.test(question)&&!/\\b(because|when|after|for example)\\b/i.test(v))issues.push('Support the trait with a specific event from the story.');
+    if(v[0]!==v[0].toUpperCase())issues.push('Begin your sentence with a capital letter.');
+    if(!'.!?'.includes(v.slice(-1)))issues.push('Finish your answer with a period, question mark, or exclamation point.');
+    if(v.includes('  '))issues.push('Remove the extra spaces between words.');
+    if(lower.includes('scared,and'))issues.push('Add a space after the comma in "scared, and".');
+    if(lower.includes('bereavement'))issues.push('Check the word "bereavement." Did you mean "bravery"?');
+    if(q.includes('theme')){
+      if(['wedding','realistic fiction','denver','colorado'].some(t=>lower.includes(t)))issues.push('You described the topic, genre, or setting. A theme is a life lesson or message. What does the runaway chinchilla teach us about courage, responsibility, or staying calm? Use an event to support your idea.');
+      else if(words.length<8)issues.push('Name a life lesson and explain which story event supports it.');
+    }else if(q.includes('traits')){
+      if(!['because','when','after','for example','she showed'].some(t=>lower.includes(t)))issues.push('Give an example from the story to support the trait.');
+      if(lower.includes('violet traits'))issues.push('Write "Violet’s traits" to show possession.');
+    }else if(q.includes('react')||q.includes('interruption')){
+      if(lower.includes('scared')||lower.includes('scream')||lower.includes('yell'))issues.push('You explained their reaction and gave a story detail. Good work! Check your verb tenses: try "were scared" and "screamed" if you are describing past events.');
+      else if(words.length<7)issues.push('Describe how the characters felt and what they did.');
+    }else if(q.includes('point of view')){
+      if(lower.includes('violet'))issues.push('You identified Violet. Now check whether the narrator says "I" (first person) or tells about Violet as "she" (third person).');
+    }else if(words.length<5)issues.push('Add a detail from the story to support your answer.');
    }
-   feedback.textContent=issues.length?'Writing coach: '+issues.join(' '):'✓ Your basic writing checks look good. Make sure your ideas match the reading.';
+   feedback.textContent=issues.length?'Writing coach: '+issues.join(' '):'✓ Clear basic writing. Reread to make sure your answer matches the story.';
    feedback.style.color=issues.length?'#744d24':'#176b39';
    return !issues.length;
   }
