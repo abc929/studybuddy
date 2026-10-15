@@ -229,15 +229,15 @@ function setupSingapore4AAssessment(){
  const select=document.createElement('select');select.id='sgChapter';select.className='select';
  singapore4AChapters.forEach((ch,i)=>{const o=document.createElement('option');o.value=i;o.textContent='Chapter '+(i+1)+': '+ch[0];select.append(o)});
  select.value='1';const content=document.createElement('div');const results=document.createElement('div');results.setAttribute('aria-live','polite');
- const make=()=>{content.replaceChildren();results.textContent='';singapore4AChapters[+select.value][1].forEach((item,i)=>{
+ let workspaces=[];const make=()=>{content.replaceChildren();results.textContent='';workspaces=[];singapore4AChapters[+select.value][1].forEach((item,i)=>{
  const wrap=document.createElement('div');wrap.style.cssText='margin:12px 0;padding:12px;border:1px solid #ead4df;border-radius:12px';
  const q=document.createElement('label');q.textContent=(i+1)+'. '+item[0];q.htmlFor='sgAnswer'+i;q.style.display='block';
  const input=document.createElement('input');input.className='input';input.id='sgAnswer'+i;input.placeholder='Your answer';input.autocomplete='off';
- wrap.append(q,input);content.append(wrap);
+ wrap.append(q,input);const work=addMathWorkspace(wrap,item[0],'chapter-'+select.value+'-'+i);workspaces.push(work);content.append(wrap);
  });const button=document.createElement('button');button.type='button';button.className='primary';button.textContent='Grade my chapter check';
  button.onclick=()=>{const index=+select.value,chapter=singapore4AChapters[index],rows=chapter[1],inputs=rows.map((_,i)=>document.getElementById('sgAnswer'+i));if(inputs.some(x=>!x.value.trim())){results.textContent='Please answer all five questions before submitting.';return}
  const normalize=v=>String(v).toLowerCase().replace(/,/g,'').replace(/\\s+/g,' ').trim();
- const answers=rows.map((q,i)=>({question:q[0],selected:inputs[i].value.trim(),correct:q[1],hint:q[2],isCorrect:normalize(inputs[i].value)===normalize(q[1])}));
+ const answers=rows.map((q,i)=>({question:q[0],selected:inputs[i].value.trim(),workImage:workspaces[i]?workspaces[i]():null,correct:q[1],hint:q[2],isCorrect:normalize(inputs[i].value)===normalize(q[1])}));
  const correct=answers.filter(a=>a.isCorrect).length,pct=correct*20;
  const api=window.cloudberryStateApi;if(api){const state=api.exportState();state.chapterAssessments=state.chapterAssessments||[];state.chapterAssessments.unshift({chapter:'Singapore Dimensions Math 4A · Chapter '+(index+1)+': '+chapter[0],pct,correct,total:5,answers,at:new Date().toISOString()});state.chapterAssessments=state.chapterAssessments.slice(0,100);api.importState(state);window.dispatchEvent(new CustomEvent('cloudberry:save',{detail:JSON.parse(JSON.stringify(state))}))}
  results.replaceChildren();const h=document.createElement('h3');h.textContent='Score: '+pct+'% ('+correct+'/5)';results.append(h);
