@@ -81,6 +81,10 @@ function render(){const x=stories[Number(sel.value)||0];if(!x)return;area.replac
 sel.addEventListener('change',render);
 document.getElementById('nextStory').addEventListener('click',()=>{sel.selectedIndex=(sel.selectedIndex+1)%stories.length;render()});
 document.getElementById('printStory').addEventListener('click',()=>{const x=stories[Number(sel.value)||0];const w=window.open('','_blank');if(!w){alert('Please allow pop-ups to print this reading.');return}const d=w.document;d.open();d.write('<!doctype html><html><head><title>Cloudberry Reading</title><style>body{font:18px/1.7 Georgia,serif;max-width:720px;margin:45px auto;padding:20px}h1{font:bold 28px Arial}p{margin-bottom:20px}</style></head><body><h1 id="heading"></h1><div id="pages"></div>
+</body></html>');d.close();d.getElementById('heading').textContent=x[0];x[1].forEach(t=>{const p=d.createElement('p');p.textContent=t;d.getElementById('pages').appendChild(p)});w.focus();w.print()});
+sel.selectedIndex=0;render();
+})();
+</script>
 <section id="scienceFairLab" style="max-width:1060px;margin:24px auto;padding:20px;border:2px solid #badcc8;background:#f5fff8;border-radius:20px;font-family:inherit">
 <h2>🌳 Gabriella's Science Fair Lab: Save Our Trees!</h2>
 <p><strong>Our big question:</strong> Does land with more trees produce less stormwater runoff and flooding than land without trees?</p>
@@ -114,11 +118,8 @@ const milestones=['Research question and hypothesis','Collect materials','Build 
 for(let i=0;i<3;i++){const tr=document.createElement('tr');tr.innerHTML='<td style="padding:6px">'+(i+1)+'</td>';for(let j=0;j<2;j++){const td=document.createElement('td');td.style.padding='6px';const inp=document.createElement('input');inp.type='number';inp.min='0';inp.step='0.1';inp.inputMode='decimal';inp.style.width='100%';inp.setAttribute('aria-label','Trial '+(i+1)+' tray '+(j?'B':'A')+' runoff in milliliters');inp.value=(state.trials||{})[i*2+j]??'';inp.dataset.measure=String(i*2+j);td.append(inp);tr.append(td)}$('sfTrials').append(tr)}
 $('sfSaveTrials').onclick=()=>{state.trials=[...document.querySelectorAll('#sfTrials input')].map(x=>x.value);$('sfTrialsSaved').textContent=save()?'✓ Measurements saved on this iPad':'Could not save measurements'};show();
 })();
-<\/script>
-</body></html>');d.close();d.getElementById('heading').textContent=x[0];x[1].forEach(t=>{const p=d.createElement('p');p.textContent=t;d.getElementById('pages').appendChild(p)});w.focus();w.print()});
-sel.selectedIndex=0;render();
-})();
-</script><section class="section card" id="readingCheck"><h2>📝 Reading comprehension check</h2><p class="muted">Read the selected passage above first. Then answer these two questions. Your score is saved for Mom.</p><div id="readingQuiz"></div></section><script>
+</script>
+<section class="section card" id="readingCheck"><h2>📝 Reading comprehension check</h2><p class="muted">Read the selected passage above first. Then answer these two questions. Your score is saved for Mom.</p><div id="readingQuiz"></div></section><script>
 (function(){
 const bank=[
 [["What is a representative democracy?",["People elect representatives","One ruler makes every decision","No one can vote"],0],["What limits the power of U.S. government?",["A school rule","The Constitution","A monarch"],1]],
