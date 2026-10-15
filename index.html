@@ -480,7 +480,7 @@ function addWrittenAnswers(container,title,questions){
     if(/ {2,}/.test(v))issues.push('Remove extra spaces.');
     if(/\\b(\\w+)\\s+\\1\\b/i.test(v))issues.push('Check for a repeated word.');
     if(v.split(/\\s+/).length<4)issues.push('Add a little more explanation or an example.');
-    if(/\\bbereavement\\b/i.test(v)&&/brav/i.test(v))issues.push('Did you mean bravery rather than bereavement?');
+    if(/\\bbereavement\\b/i.test(v))issues.push('Did you mean bravery rather than bereavement?');
     if(/theme/i.test(question)&&/\\b(wedding|realistic fiction|denver|colorado)\\b/i.test(v))issues.push('Theme is the message or lesson, not the topic, genre, or setting. What did the character learn?');
     if(/traits/i.test(question)&&!/\\b(because|when|after|for example)\\b/i.test(v))issues.push('Support the trait with a specific event from the story.');
    }
@@ -488,8 +488,8 @@ function addWrittenAnswers(container,title,questions){
    feedback.style.color=issues.length?'#744d24':'#176b39';
    return !issues.length;
   }
-  field.addEventListener('input',()=>{saved[i]=field.value;try{localStorage.setItem(key,JSON.stringify(saved))}catch(e){};feedback.textContent='Draft saved on this device.'});
-  check.addEventListener('click',evaluate);
+  field.addEventListener('input',()=>{saved[i]=field.value;try{localStorage.setItem(key,JSON.stringify(saved))}catch(e){};evaluate()});
+  check.addEventListener('click',evaluate);if(field.value.trim())evaluate();
   group.append(label,field,check,feedback);form.appendChild(group);messages.push({evaluate,feedback});
  });
  const submit=document.createElement('button');submit.type='submit';submit.className='soft';submit.textContent='📨 Submit my answers';
