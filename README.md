@@ -35,3 +35,14 @@ Progress includes the checklist, skill estimates, study streaks, and the latest 
 ## Run locally
 
 Open `index.html` from a local web server (for example, GitHub Pages or another HTTPS host). Google sign-in needs an authorized web domain. The study tools work locally without Firebase.
+
+## Math and Science Fair tabs
+
+- Math offers three original daily questions for the selected lesson in the current Chapter 2 assignment (Addition and Subtraction). Its six lesson topics follow the [publisher’s 4A table of contents](https://www.singaporemath.com/products/dimensions-math-textbook-4a). Select the lesson being studied; it stays selected until changed. Answers, hints, written workspaces and scores save with progress and appear in Mom’s view. Existing chapter checks for all nine chapters are now in Math.
+- Science Fair retains the Save Our Trees lessons, reflections and measurements. Existing device notes migrate into synced progress. No due date is assumed. Enter the official date when available to calculate milestones 28, 24, 21, 14, 10, 7 and 3 days before the deadline. Daily Plan shows only due tasks and unfinished catch-up tasks; the whole project lives in Science Fair. Completing a task removes it from the daily list. Changing the due date recalculates dates and retains completed work.
+- Hispanic Heritage Month appears as an active occasion only September 15 through October 15. Its archived reading and cultural practice remain in Learn. Music and the other learning tools remain available.
+- The new schoolwork fields use the existing private student record and parent read-only cloud access. Live cross-device synchronization still requires the existing Firebase roles and rules. Written math work and science reflections are included in that record.
+
+## Checks
+
+With a current Node.js runtime, run `node --test tests/planner.test.cjs` for date boundaries, backward scheduling and generated answer checks. Browser regression checks use Playwright and installed Microsoft Edge: install Playwright as a development tool, then run `node tests/browser.cjs`. Set `PLAYWRIGHT_MODULE` to an absolute Playwright package path if using a bundled runtime. Browser checks use synthetic local progress and block Firebase imports; they never change real student records.

@@ -75,7 +75,11 @@ if (!configured) {
     const hasActivity = (state) => Boolean(state && (
       (state.sessions || []).length ||
       Object.values(state.tasks || {}).some(Boolean) ||
-      Number(state.stars) > 0
+      Number(state.stars) > 0 ||
+      Object.keys(state.mathDaily || {}).length ||
+      Object.keys(state.scienceFair?.answers || {}).length ||
+      (state.scienceFair?.trials || []).some(value => value !== '') ||
+      state.scienceFair?.dueDate
     ));
 
     signInButton?.addEventListener('click', async () => {
