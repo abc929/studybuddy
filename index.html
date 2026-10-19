@@ -82,7 +82,7 @@ stories.push(
 const libraryKey='cloudberry:reading-completions:v2';
 let completed={};try{completed=JSON.parse(localStorage.getItem(libraryKey)||'{}')||{}}catch(e){}
 const readingSection=document.getElementById('readingLibrary');
-const review=document.createElement('div');review.id='readingCheck';review.style.cssText='padding:16px;border-radius:16px;background:#fff4ec;margin-top:14px';
+const review=document.createElement('div');review.id='libraryComprehension';review.style.cssText='padding:16px;border-radius:16px;background:#fff4ec;margin-top:14px';
 area.insertAdjacentElement('afterend',review);
 function saveReading(record){
  completed[record.title]=record;localStorage.setItem(libraryKey,JSON.stringify(completed));
@@ -133,26 +133,7 @@ function render(){
 }
 sel.addEventListener('change',render);
 document.getElementById('nextStory').addEventListener('click',()=>{sel.selectedIndex=(sel.selectedIndex+1)%sel.options.length;render()});
-document.getElementById('printStory').addEventListener('click',()=>{const x=stories[Number(sel.value)||0];const w=window.open('','_blank');if(!w){alert('Please allow pop-ups to print this reading.');return}const d=w.document;d.open();d.write("<!doctype html><html><head><title>Cloudberry Reading</title><style>body{font:18px/1.7 Georgia,serif;max-width:720px;margin:45px auto;padding:20px}h1{font:bold 28px Arial}p{margin-bottom:20px}</style></head><body><h1 id=\"heading\"></h1><div id=\"pages\"></div><script>
-(function(){
- const mom=document.getElementById('mom');if(!mom)return;
- const card=document.createElement('section');card.className='section card';
- card.innerHTML='<h2>📚 Reading grades & completed books</h2><p class="muted">Completed readings disappear from Gabriella’s active list, but stay here for review.</p><div id="readingGradeHistory"></div>';
- mom.prepend(card);
- function refresh(){
-  const box=document.getElementById('readingGradeHistory');if(!box)return;
-  let records={};try{records=JSON.parse(localStorage.getItem('cloudberry:reading-completions:v2')||'{}')||{}}catch(e){}
-  const fromState=window.cloudberryStateApi?.exportState()?.readingGrades||[];
-  fromState.forEach(r=>{if(!records[r.title]||new Date(r.at)>new Date(records[r.title].at))records[r.title]=r});
-  const rows=Object.values(records).sort((a,b)=>new Date(b.at)-new Date(a.at));
-  box.replaceChildren();if(!rows.length){box.textContent='No finished readings yet.';return}
-  rows.forEach(r=>{const p=document.createElement('div');p.className='logrow';const title=document.createElement('b');title.textContent=r.title+' · '+r.score+'%';const details=document.createElement('p');details.className='tiny muted';details.textContent='Finished '+new Date(r.at).toLocaleDateString()+' • '+(r.feedback||'Reading completed');p.append(title,details);box.appendChild(p)});
- }
- document.querySelector('.tab[data-view="mom"]')?.addEventListener('click',refresh);
- window.addEventListener('cloudberry:save',refresh);
- refresh();
-})();
-</script></body></html>");d.close();d.getElementById('heading').textContent=x[0];x[1].forEach(t=>{const p=d.createElement('p');p.textContent=t;d.getElementById('pages').appendChild(p)});w.focus();w.print()});
+document.getElementById('printStory').addEventListener('click',()=>{const x=stories[Number(sel.value)||0];const w=window.open('','_blank');if(!w){alert('Please allow pop-ups to print this reading.');return}const d=w.document;d.open();d.write("<!doctype html><html><head><title>Cloudberry Reading</title><style>body{font:18px/1.7 Georgia,serif;max-width:720px;margin:45px auto;padding:20px}h1{font:bold 28px Arial}p{margin-bottom:20px}</style></head><body><h1 id=\"heading\"></h1><div id=\"pages\"></div></body></html>");d.close();d.getElementById('heading').textContent=x[0];x[1].forEach(t=>{const p=d.createElement('p');p.textContent=t;d.getElementById('pages').appendChild(p)});w.focus();w.print()});
 sel.selectedIndex=0;render();
 })();
 </script>
@@ -712,4 +693,23 @@ if(plan&&assigned&&data){
  wordList(card,data.words);plan.appendChild(card);
 }
 })();
-</script><script src="study-tabs.js"></script></body></html>
+</script><script src="study-tabs.js"></script><script>
+(function(){
+ const mom=document.getElementById('mom');if(!mom)return;
+ const card=document.createElement('section');card.className='section card';
+ card.innerHTML='<h2>📚 Reading grades & completed books</h2><p class="muted">Completed readings disappear from Gabriella’s active list, but stay here for review.</p><div id="readingGradeHistory"></div>';
+ mom.prepend(card);
+ function refresh(){
+  const box=document.getElementById('readingGradeHistory');if(!box)return;
+  let records={};try{records=JSON.parse(localStorage.getItem('cloudberry:reading-completions:v2')||'{}')||{}}catch(e){}
+  const fromState=window.cloudberryStateApi?.exportState()?.readingGrades||[];
+  fromState.forEach(r=>{if(!records[r.title]||new Date(r.at)>new Date(records[r.title].at))records[r.title]=r});
+  const rows=Object.values(records).sort((a,b)=>new Date(b.at)-new Date(a.at));
+  box.replaceChildren();if(!rows.length){box.textContent='No finished readings yet.';return}
+  rows.forEach(r=>{const p=document.createElement('div');p.className='logrow';const title=document.createElement('b');title.textContent=r.title+' · '+r.score+'%';const details=document.createElement('p');details.className='tiny muted';details.textContent='Finished '+new Date(r.at).toLocaleDateString()+' • '+(r.feedback||'Reading completed');p.append(title,details);box.appendChild(p)});
+ }
+ document.querySelector('.tab[data-view="mom"]')?.addEventListener('click',refresh);
+ window.addEventListener('cloudberry:save',refresh);
+ refresh();
+})();
+</script></body></html>
