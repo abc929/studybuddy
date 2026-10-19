@@ -239,16 +239,18 @@ const qbank={
 'Writing with evidence':[{q:'Finish the sentence starter: “I think ___ because the text says ___.”',a:'because',hint:'Make a claim, then connect it to a detail in the reading.',level:1}],
 'Science: structure & function':[{q:'In science, what does function mean?',a:'job',hint:'Think about what a part does or how it helps.',level:1},{q:'A bird has a hooked beak. What might that shape help it do?',a:'food',hint:'Connect the beak’s shape to how the bird gets food.',level:2}],
 'Social studies: maps & communities':[{q:'What does a map key explain?',a:'symbols',hint:'Look for the box that tells what map marks mean.',level:1},{q:'Which direction is opposite east?',a:'west',hint:'Use the compass rose.',level:2}]};
-let state=load();let current=null;let hints=0;let chosenConfidence=2;window.cloudberryStateApi={exportState:()=>state,importState(data){state={...blank(),...data};localStorage.setItem(KEY,JSON.stringify(state));render()}};
-function blank(){return{bjuAnswers:{},tasks:{},sessions:[],model:{},stars:0,day:new Date().toLocaleDateString(),days:[]}}
-function load(){try{return{...blank(),...JSON.parse(localStorage.getItem(KEY)||'{}')}}catch{return blank()}}
-function save(){state.day=new Date().toLocaleDateString();localStorage.setItem(KEY,JSON.stringify(state));document.getElementById('saveState').textContent='Saved on this device';window.dispatchEvent(new CustomEvent('cloudberry:save',{detail:JSON.parse(JSON.stringify(state))}));render()}
+let state=load();let current=null;let hints=0;let chosenConfidence=2;window.cloudberryStateApi={exportState:()=>state,importState(data){state=normalizeDailyTasks({...blank(),...data});localStorage.setItem(KEY,JSON.stringify(state));render()}};
+function taskDate(){const d=new Date();return [d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-')}
+function normalizeDailyTasks(data){data.taskDates=data.taskDates||{};const key=taskDate();data.tasks={...(data.taskDates[key]||{})};data.day=key;return data}
+function blank(){return{bjuAnswers:{},tasks:{},taskDates:{},sessions:[],model:{},stars:0,day:taskDate(),days:[]}}
+function load(){try{return normalizeDailyTasks({...blank(),...JSON.parse(localStorage.getItem(KEY)||'{}')})}catch{return blank()}}
+function save(){state.day=taskDate();state.taskDates=state.taskDates||{};state.taskDates[state.day]={...state.tasks};localStorage.setItem(KEY,JSON.stringify(state));document.getElementById('saveState').textContent='Saved on this device';window.dispatchEvent(new CustomEvent('cloudberry:save',{detail:JSON.parse(JSON.stringify(state))}));render()}
 function toast(s){let x=document.getElementById('toast');x.textContent=s;x.classList.add('show');setTimeout(()=>x.classList.remove('show'),2400)}
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function prob(skill){let m=state.model[skill]||{w:[0,0,0],b:-.35,n:0};let z=m.b+(m.w[0]*(m.correct||0))+(m.w[1]*(m.independent||0))+(m.w[2]*(m.confidence||0));return 1/(1+Math.exp(-z))}
 function updateModel(skill,correct,independent,confidence){let m=state.model[skill]||{w:[0,0,0],b:-.35,n:0,correct:.5,independent:.4,confidence:.5};let x=[m.correct,m.independent,m.confidence];let p=1/(1+Math.exp(-(m.b+x.reduce((s,v,i)=>s+v*m.w[i],0))));let e=(correct?1:0)-p;let rate=.24;m.b+=rate*e;for(let i=0;i<3;i++)m.w[i]+=rate*e*x[i];m.n++;m.correct=.72*m.correct+.28*(correct?1:0);m.independent=.72*m.independent+.28*(independent?1:0);m.confidence=.72*m.confidence+.28*(confidence/3);state.model[skill]=m}
 function level(skill){let p=prob(skill);return p<.43?1:p<.67?2:3}
-function render(){let tl=document.getElementById('taskList');tl.innerHTML='';daily.forEach((t,i)=>{let l=document.createElement('label');l.className='task';l.innerHTML=`<input type="checkbox" ${state.tasks[i]?'checked':''} data-task="${i}"><span>${esc(t)}</span>`;l.querySelector('input').onchange=e=>{state.tasks[i]=e.target.checked;save()};tl.append(l)});let done=daily.filter((_,i)=>state.tasks[i]).length;document.getElementById('todayCount').textContent=`${done} of ${daily.length}`;document.getElementById('taskText').textContent=`${Math.round(done/daily.length*100)}%`;document.getElementById('taskBar').style.width=`${done/daily.length*100}%`;document.getElementById('stars').textContent=state.stars||0;document.getElementById('streak').textContent=(state.days||[]).length>1?`🔥 ${(state.days||[]).length} study days`:'🌱 Growing one try at a time';
+function render(){if(state.day!==taskDate())normalizeDailyTasks(state);let tl=document.getElementById('taskList');tl.innerHTML='';daily.forEach((t,i)=>{let l=document.createElement('label');l.className='task';l.innerHTML=`<input type="checkbox" ${state.tasks[i]?'checked':''} data-task="${i}"><span>${esc(t)}</span>`;l.querySelector('input').onchange=e=>{state.tasks[i]=e.target.checked;save()};tl.append(l)});let done=daily.filter((_,i)=>state.tasks[i]).length;document.getElementById('todayCount').textContent=`${done} of ${daily.length}`;document.getElementById('taskText').textContent=`${Math.round(done/daily.length*100)}%`;document.getElementById('taskBar').style.width=`${done/daily.length*100}%`;document.getElementById('stars').textContent=state.stars||0;document.getElementById('streak').textContent=(state.days||[]).length>1?`🔥 ${(state.days||[]).length} study days`:'🌱 Growing one try at a time';
 let sc=document.getElementById('subjectCards');sc.innerHTML=subjects.map(([n,i,d])=>`<button class="subject" data-skill="${esc(n)}"><span class="icon">${i}</span><h3>${esc(n)}</h3><p>${esc(d)}</p></button>`).join('');sc.querySelectorAll('button').forEach(b=>b.onclick=()=>{switchView('learn');selectTopicForSubject(b.dataset.skill)});
 let sel=document.getElementById('topicSelect');if(!sel.options.length){sel.innerHTML=skillNames.map(s=>`<option>${esc(s)}</option>`).join('');sel.onchange=updateLevel}
 updateLevel();renderProgress();renderMom();let last=state.sessions[0];document.getElementById('lastSession').innerHTML=last?`<span class="pill">${esc(last.skill)}</span><p>${last.ok?'✅':'✏️'} ${last.ok?'Correct answer':'Good practice'} · ${new Date(last.at).toLocaleString([], {month:'short',day:'numeric',hour:'numeric',minute:'2-digit'})}</p>`:'Your first session is waiting for you.'}
@@ -381,6 +383,34 @@ document.getElementById('momNoteBtn').onclick=()=>{let x=document.getElementById
 document.getElementById('shareBtn').onclick=async()=>{let data={v:2,createdAt:new Date().toISOString(),tasks:state.tasks,sessions:state.sessions,model:state.model,stars:state.stars,days:state.days};let encoded=btoa(unescape(encodeURIComponent(JSON.stringify(data)))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');let link=location.href.split('#')[0]+'#snapshot='+encoded;let status=document.getElementById('shareStatus');try{if(navigator.share)await navigator.share({title:'Gabriella’s study progress',text:'Here is my latest study snapshot.',url:link});else{await navigator.clipboard.writeText(link);status.textContent='Snapshot link copied. Paste it into a text or email to Mom.'}}catch(e){if(e.name!=='AbortError'){try{await navigator.clipboard.writeText(link);status.textContent='Snapshot link copied. Paste it into a text or email to Mom.'}catch{status.textContent='Copy this link from the address bar after the #snapshot= part is added.'}}}};
 function loadSnapshot(){let hash=location.hash;if(!hash.startsWith('#snapshot='))return;try{let raw=hash.slice(10).replace(/-/g,'+').replace(/_/g,'/');let d=JSON.parse(decodeURIComponent(escape(atob(raw))));if(d.v!==2)return;renderMom(d);document.getElementById('importedSnapshot').classList.remove('hide');document.getElementById('importedSnapshot').innerHTML=`Snapshot received · ${new Date(d.createdAt).toLocaleString()}. This is a read-only copy. Go to <b>Mom’s view</b> to see details.`;switchView('mom')}catch{toast('That progress link could not be opened. Ask Gabriella to make a fresh snapshot.')}}
 render();loadSnapshot();
+})();
+</script><script>
+(function(){
+ // Keep learning materials and check-offs on the same Today screen as prayer and gratitude.
+ const today=document.getElementById('today'),plan=document.getElementById('plan');
+ const prayer=document.getElementById('morningPrayer');
+ const dailyPlan=document.getElementById('dailyLessonPlan');
+ const reading=document.getElementById('bjuReading');
+ const wins=document.getElementById('taskList')?.closest('.card');
+ if(today&&plan&&prayer&&dailyPlan&&reading&&wins){
+   prayer.insertAdjacentElement('afterend',dailyPlan);
+   dailyPlan.insertAdjacentElement('afterend',reading);
+   reading.insertAdjacentElement('afterend',wins);
+   wins.querySelector('h2').textContent='✅ Check off finished work';
+   const desc=wins.querySelector('p.muted.tiny');
+   if(desc)desc.textContent='Starts unchecked each day. Gabriella checks a box only after finishing that work.';
+   const hero=today.querySelector('.hero');
+   if(hero)hero.style.display='none';
+   const subjects=today.querySelector('.section:has(#subjectCards)');
+   if(subjects)subjects.style.display='none';
+   const extra=today.querySelector('.grid2:has(#lastSession)');
+   if(extra)extra.style.display='none';
+   const tab=document.querySelector('.tab[data-view="plan"]');
+   if(tab)tab.remove();
+   plan.remove();
+   const todayTab=document.querySelector('.tab[data-view="today"]');
+   if(todayTab)todayTab.textContent='🏠 Today';
+ }
 })();
 </script><script type="module" src="./cloud-sync.js"></script><script>
 (function(){
