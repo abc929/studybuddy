@@ -527,7 +527,8 @@ const tasks=day===0||day===6?[]:isCoop?[
 
 const specialKey='cloudberry-extra-activities-v1';
 let extras=[];try{extras=JSON.parse(localStorage.getItem(specialKey)||'[]')}catch(e){}
-if(day===2){tasks.push(['🎨 Tuesday evening · Diorama class (confirm class time)',''])}
+if(iso==='2026-10-20'||iso==='2026-10-27'){tasks.push(['🎨 5:00–6:00 PM · Safari Art & Science: 3D Diorama · Spring Dell Center, 6040 Radio Station Rd, La Plata',''])}
+if(iso==='2026-11-03'){tasks.push(['🚌 EFH field trip · time to be confirmed',''])}
 const todayExtras=extras.filter(x=>x.date===iso).sort((a,b)=>a.time.localeCompare(b.time));
 todayExtras.forEach(x=>tasks.push([(x.time?x.time+' · ':'')+x.title,x.url||'']));
 if(tasks.length && !isCoop){const at=tasks.findIndex(x=>x[0].includes('2:00 ·'));tasks.splice(at<0?tasks.length:at+1,0,['🧠 Math practice · use vertical workspace and worked examples',''])}
