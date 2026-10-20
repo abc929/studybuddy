@@ -452,7 +452,7 @@ render();loadSnapshot();
  if(today&&plan&&prayer&&dailyPlan&&reading&&wins){
    prayer.insertAdjacentElement('afterend',dailyPlan);
    dailyPlan.insertAdjacentElement('afterend',reading);
-   reading.insertAdjacentElement('afterend',wins);
+   reading.insertAdjacentElement('afterend',wins);wins.style.display='none';
    wins.querySelector('h2').textContent='✅ Check off finished work';
    const desc=wins.querySelector('p.muted.tiny');
    if(desc)desc.textContent='Starts unchecked each day. Gabriella checks a box only after finishing that work.';
@@ -524,7 +524,32 @@ const tasks=day===0||day===6?[]:isCoop?[
 ['🏃 3:15 · PE and movement',''],
 ['🎨 After required work · Optional Creative Choice','']
 ];
-box.innerHTML='<p><b>'+new Intl.DateTimeFormat('en-US',{weekday:'long',month:'long',day:'numeric'}).format(d)+'</b></p>'+(tasks.length?'<ul style="list-style:none;padding:0">'+tasks.map(([t,url])=>'<li style="padding:9px 0;border-bottom:1px solid #eadbe5">'+(url?'<a href="'+url+'" target="_blank" rel="noopener noreferrer">'+t+' ↗</a>':t)+'</li>').join('')+'</ul>':'<p>🌸 No scheduled school assignments today. Enjoy your break!</p>');
+
+const specialKey='cloudberry-extra-activities-v1';
+let extras=[];try{extras=JSON.parse(localStorage.getItem(specialKey)||'[]')}catch(e){}
+if(day===2){tasks.push(['🎨 Tuesday evening · Diorama class (confirm class time)',''])}
+const todayExtras=extras.filter(x=>x.date===iso).sort((a,b)=>a.time.localeCompare(b.time));
+todayExtras.forEach(x=>tasks.push([(x.time?x.time+' · ':'')+x.title,x.url||'']));
+if(tasks.length && !isCoop){const at=tasks.findIndex(x=>x[0].includes('2:00 ·'));tasks.splice(at<0?tasks.length:at+1,0,['🧠 Math practice · use vertical workspace and worked examples',''])}
+else if(tasks.length){tasks.push(['🧠 Math practice · review and solve one vertical problem',''])}
+box.replaceChildren();
+const heading=document.createElement('p');heading.innerHTML='<b>'+new Intl.DateTimeFormat('en-US',{weekday:'long',month:'long',day:'numeric'}).format(d)+'</b> · Check off each activity when finished';box.appendChild(heading);
+const key='cloudberry-plan-done:'+iso;
+let completed={};try{completed=JSON.parse(localStorage.getItem(key)||'{}')}catch(e){}
+const list=document.createElement('div');list.style.cssText='display:grid;gap:8px';
+function updateCount(){const num=tasks.filter((_,i)=>completed[i]).length;counter.textContent=num+' of '+tasks.length+' finished'}
+tasks.forEach(([label,url],i)=>{
+ const row=document.createElement('div');row.style.cssText='display:flex;align-items:center;gap:12px;padding:11px;border:1px solid #efdae8;border-radius:13px;background:#fff';
+ const checkbox=document.createElement('input');checkbox.type='checkbox';checkbox.checked=!!completed[i];checkbox.style.cssText='width:23px;height:23px;accent-color:#548a61;flex-shrink:0';checkbox.setAttribute('aria-label','Finished: '+label);
+ const text=document.createElement('span');text.style.cssText='flex:1;min-width:0;overflow-wrap:anywhere';if(url){const link=document.createElement('a');link.href=url;link.target='_blank';link.rel='noopener noreferrer';link.textContent=label+' ↗';text.appendChild(link)}else text.textContent=label;
+ const styleRow=()=>{text.style.textDecoration=checkbox.checked?'line-through':'none';text.style.opacity=checkbox.checked?'.55':'1'};styleRow();
+ checkbox.addEventListener('change',()=>{completed[i]=checkbox.checked;localStorage.setItem(key,JSON.stringify(completed));styleRow();updateCount();window.dispatchEvent(new CustomEvent('cloudberry:save'))});
+ row.append(checkbox,text);list.appendChild(row);
+});
+const counter=document.createElement('p');counter.className='tiny muted';counter.setAttribute('role','status');updateCount();box.append(counter,list);
+const details=document.createElement('details');details.style.marginTop='18px';details.innerHTML='<summary style="cursor:pointer;font-weight:700">➕ Add field trip, class, appointment or activity</summary><p class="tiny muted">Add one-time activities to the right date. Leave the time blank if it has not been confirmed.</p><form id="extraSchedule" style="display:grid;gap:8px"><input class="textinput" name="title" required maxlength="130" placeholder="Activity name, e.g. field trip"><input class="textinput" name="date" type="date" required value="'+iso+'"><input class="textinput" name="time" type="time" aria-label="Optional time"><input class="textinput" name="url" type="url" placeholder="Optional meeting or registration link"><button type="submit" class="soft">Add to Gabriella’s plan</button></form>';
+box.append(details);
+details.querySelector('form').onsubmit=e=>{e.preventDefault();const form=e.currentTarget;const title=form.elements.title.value.trim(),date=form.elements.date.value,time=form.elements.time.value,url=form.elements.url.value.trim();if(!title||!date)return;extras.push({title,date,time,url});localStorage.setItem(specialKey,JSON.stringify(extras));update()};
 if(assigned){const wrap=document.createElement('div');wrap.style.cssText='padding:12px;margin:8px 0;border:1px solid #edb4d3;border-radius:12px;background:#fff';wrap.innerHTML='<b>📖 Today’s story:</b> '+assigned[0]+'<p>Open BJU Reading 5 to <b>page '+assigned[1]+'</b>. Read the whole selection today.</p><b>Vocabulary:</b> '+(assigned[3].length?'Tap a word to hear it.':'No vocabulary for this poetry selection.')+'<div id="planVocab" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px"></div>';box.appendChild(wrap);if(iso==='2026-10-19'){const guide=document.createElement('div');guide.style.cssText='margin-top:13px;padding:13px;background:#fff4fb;border-radius:12px';guide.innerHTML='<h3>📝 Story questions</h3><ol><li>How is reader’s theater different from a play?</li><li>What makes a character a trickster?</li><li>What problem does Grandmother Spider face, and how is it solved?</li><li>Which character demonstrates cleverness? Explain using evidence.</li><li>What lesson does the story teach?</li></ol><p>Read BJU Reading 5, pages 58–63. Tap the vocabulary words below for pronunciation. Then answer the questions in complete sentences in the Story & Word Helper underneath this plan.</p>';wrap.appendChild(guide)}const target=wrap.querySelector('#planVocab');assigned[3].forEach(v=>{const b=document.createElement('button');b.type='button';b.className='soft';b.textContent='🔊 '+v;b.addEventListener('click',()=>{if(!('speechSynthesis' in window))return;speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(v);u.lang='en-US';u.rate=.82;speechSynthesis.speak(u)});target.appendChild(b)})}
 
 }update();document.addEventListener('visibilitychange',()=>{if(!document.hidden)update()});
