@@ -65,6 +65,30 @@ const stories=[
 ["🌼 Día de los Muertos: Marisol's Memory Table",["Marisol carefully placed a photograph of her grandfather on a table covered with bright paper flowers. 'Why do we make an ofrenda?' she asked her mother.","'It's one way our family remembers people we love who have died,' her mother explained. 'We share stories, photographs, and foods that remind us of them.'","Marisol added a drawing of her grandfather's garden. Her brother told a funny story about the time Grandfather grew an enormous pumpkin. Soon everyone was laughing and remembering.","Their family observed Día de los Muertos on November 1 and 2. Marisol understood that the celebration was about memory, love, and connection. It was not simply another name for Halloween.","Talk about it: What object could help someone remember a happy family story?"]],
 ["🎃 Halloween: The Mystery of the Friendly Lantern",["On Halloween night, Nia spotted a lantern flickering beside the library. Under it lay a note: 'Find the missing golden leaf before the clock strikes eight!'","Nia followed a trail of paper bats past the pumpkin display. She heard a creak and froze. Then she noticed the sound came from a loose wooden sign swinging in the breeze.","At the final clue, Nia found the golden leaf taped to a library book. The librarian grinned. 'You solved our autumn mystery!'","Nia realized that being brave did not mean never feeling afraid. It meant looking carefully, asking questions, and taking a safe next step.","Talk about it: How did Nia use evidence instead of letting fear make her decisions?"]]
 ];
+stories.push(
+["🌲 Science: Forests as Living Watersheds",[
+"A forest is more than a collection of trees. It is an interconnected watershed in which precipitation, soil, vegetation, microorganisms, and streams influence one another. When rain lands on leaves, some evaporates before it reaches the ground. Other water moves slowly into the soil through pathways created by roots and burrowing animals. Scientists call this process infiltration.",
+"In urban and suburban developments, roofs and paved roads create impervious surfaces. These surfaces reduce infiltration and accelerate surface runoff. During a strong storm, runoff may reach a stream faster than it would in a wooded watershed, potentially increasing peak streamflow, erosion, and downstream flooding.",
+"However, removing trees does not automatically cause every flood. Storm intensity, soil saturation, topography, drainage infrastructure, and development design all matter. Researchers compare watersheds carefully to avoid confusing correlation with causation.",
+"Charles County faces difficult land-use choices. Builders may need space for new housing, while residents want safe roads, clean streams, and wildlife habitat. Rain gardens, permeable pavement, tree preservation, and stormwater ponds can each help, but no single solution eliminates every risk.",
+"Consider the evidence: What information would you need to decide whether a new neighborhood is changing flood risk? Explain how you would separate the effects of tree removal from rainfall intensity."
+]],
+["🦉 Science: Habitat Fragmentation and Adaptation",[
+"A habitat provides an organism with food, water, shelter, and opportunities to reproduce. A woodland can appear green on a map yet still fail to support some species when roads and buildings divide it into isolated patches. This process is called habitat fragmentation.",
+"Fragmentation creates edge habitats, where light, temperature, wind, and encounters with predators can differ from conditions deep inside a forest. Some adaptable species thrive along edges, while species that need undisturbed interior forest may decline.",
+"Wildlife corridors can connect otherwise separated populations and help organisms move to find food or mates. Yet corridors must be designed for the animals that will use them: a crossing useful to deer may not protect amphibians that migrate during rainy nights.",
+"Conservation planning therefore involves trade-offs. Scientists gather evidence from camera traps, population surveys, roadkill records, and habitat maps rather than assuming every green space functions equally well.",
+"Make an inference: Why might two neighborhoods with the same number of trees support different kinds of wildlife?"
+]],
+["🌧️ Science: Where Stormwater Goes",[
+"A storm drain is not always connected to a sewage treatment plant. In many communities, rainwater entering a storm drain flows directly toward a creek, pond, or river. The water can carry sediment, motor oil, fertilizer, and litter picked up from streets.",
+"When a stream receives a sudden rush of stormwater, fast-moving water may erode its banks and wash away habitats for fish and aquatic insects. Nutrients from lawn fertilizers can also contribute to algal growth, which can reduce dissolved oxygen when algae decompose.",
+"Engineers use detention ponds to slow runoff, while rain gardens and permeable surfaces help some water enter the ground. Each approach has limits: for instance, saturated soil may absorb little additional water during a long storm.",
+"To evaluate solutions, researchers measure rainfall, runoff volume, pollutant concentration, and water quality over time. One photograph taken after a storm may suggest a problem, but repeated measurements produce stronger evidence.",
+"Analyze the claim: A neighbor says, 'The storm drains keep all pollution out of our creek.' What evidence from the passage challenges that idea?"
+]]
+);
+
 const sel=document.getElementById('storySelect'),area=document.getElementById('storyText');
 stories.push(
 ["🌳 Science: Trees, Runoff, and Flooding",["After a rainstorm, water travels across roofs, roads, lawns, and forests. This moving water is called runoff. When rain soaks into soil, it can refill groundwater instead of rushing into a storm drain.","Tree leaves slow falling rain. Roots create channels in the soil and help hold soil in place. When a wooded area is replaced with pavement, less water may soak into the ground, and runoff can reach streams more quickly.","Too much fast-moving runoff can erode stream banks and carry litter or pollutants into habitats. Communities can help by protecting trees, planting rain gardens, and using surfaces that let water soak through.","Think about it: How could you test whether soil with plants absorbs more water than bare soil?"]],
@@ -104,7 +128,7 @@ function render(){
  area.replaceChildren();const title=document.createElement('h3');title.textContent=x[0];area.appendChild(title);
  const visual=document.createElement('div');visual.style.cssText='font-size:3.2rem;text-align:center;background:linear-gradient(115deg,#e1f4ff,#fff2cc,#ffe4f4);border-radius:16px;padding:13px';visual.textContent=x[0].match(/^\p{Extended_Pictographic}/u)?.[0]||'📖';visual.setAttribute('role','img');visual.setAttribute('aria-label','Illustrated subject symbol');area.appendChild(visual);
  x[1].forEach(p=>{const el=document.createElement('p');el.textContent=p;area.appendChild(el)});
- review.replaceChildren();const h=document.createElement('h3');h.textContent='🧠 Comprehension check • 5th grade';review.appendChild(h);
+ review.replaceChildren();const h=document.createElement('h3');h.textContent='🧠 Comprehension · evidence and reasoning (grades 5–7)';review.appendChild(h);
  const description=document.createElement('p');description.textContent='Read carefully, then choose the details supported by the text. Use the evidence to explain your thinking.';review.appendChild(description);
  const paragraphs=x[1].filter(p=>!(/^(Think about it|Try it|Talk about it)/i).test(p));const choices=paragraphs.slice(0,3);
  const form=document.createElement('form');form.noValidate=true;
@@ -118,15 +142,15 @@ function render(){
    rotated.forEach((option,j)=>{const label=document.createElement('label');label.style.cssText='display:block;padding:7px';const radio=document.createElement('input');radio.type='radio';radio.name='readQ'+i;radio.value=String(rotated.indexOf(accurate)===j?1:0);label.append(radio,document.createTextNode(' '+option));group.appendChild(label)});
    form.appendChild(group);
  });
- const label=document.createElement('label');label.textContent='4. Explain one important idea from this reading using evidence (2–3 complete sentences).';label.style.fontWeight='700';form.appendChild(label);
+ const label=document.createElement('label');label.textContent='4. Explain a cause-and-effect relationship or inference from the passage. Cite two distinct details from the reading in 3–5 complete sentences.';label.style.fontWeight='700';form.appendChild(label);
  const response=document.createElement('textarea');response.rows=4;response.className='textinput';response.placeholder='The text explains... For example,...';form.appendChild(response);
  const finish=document.createElement('label');finish.style.cssText='display:block;padding:13px;background:white;border-radius:10px';const checkbox=document.createElement('input');checkbox.type='checkbox';finish.append(checkbox,document.createTextNode(' I have finished reading the entire selection.'));form.appendChild(finish);
  const result=document.createElement('p');result.setAttribute('role','status');
  const button=document.createElement('button');button.className='primary';button.type='submit';button.textContent='Submit and grade my reading';
  form.onsubmit=e=>{e.preventDefault();if(!checkbox.checked){result.textContent='Check the box once you finish reading.';return}const marked=choices.map((_,i)=>form.querySelector('input[name="readQ'+i+'"]:checked'));if(marked.some(v=>!v)){result.textContent='Answer all three questions before submitting.';return}
- const words=response.value.trim().split(/\s+/).filter(Boolean);if(words.length<12){result.textContent='Write at least two complete sentences explaining your thinking.';return}
- const correct=marked.filter(v=>v.value==='1').length;const evidence=words.length>=20&&/\b(because|for example|according|text|passage|story|shows|explains)\b/i.test(response.value);const writtenScore=evidence?1:0;const score=Math.round((correct+writtenScore)/4*100);
- const record={title:x[0],score,correct,total:4,readingFinished:true,at:new Date().toISOString(),response:response.value,feedback:evidence?'Written evidence included.':'Written response needs more specific supporting evidence.'};
+ const words=response.value.trim().split(/\s+/).filter(Boolean);if(words.length<35){result.textContent='Develop your explanation in 3–5 sentences (at least 35 words) with two supporting details.';return}
+ const correct=marked.filter(v=>v.value==='1').length;const evidence=words.length>=35&&/\b(because|for example|according|text|passage|story|shows|explains)\b/i.test(response.value);const writtenScore=evidence?1:0;const score=Math.round((correct+writtenScore)/4*100);
+ const record={title:x[0],score,correct,total:4,readingFinished:true,at:new Date().toISOString(),response:response.value,answers:marked.map((v,i)=>({question:i+1,answer:v.parentElement.textContent.trim(),correct:v.value==='1'})),feedback:evidence?'Written evidence included.':'Written response needs more specific supporting evidence.'};
  result.textContent='Grade: '+score+'%. '+record.feedback+' Saved to Mom’s reading progress. Removing this selection from the active library.';
  saveReading(record);
  };form.append(button,result);review.appendChild(form);
@@ -731,8 +755,9 @@ if(plan&&assigned&&data){
   const fromState=window.cloudberryStateApi?.exportState()?.readingGrades||[];
   fromState.forEach(r=>{if(!records[r.title]||new Date(r.at)>new Date(records[r.title].at))records[r.title]=r});
   const rows=Object.values(records).sort((a,b)=>new Date(b.at)-new Date(a.at));
+  // Preserve open-response answers in the parent report instead of displaying grades alone.
   box.replaceChildren();if(!rows.length){box.textContent='No finished readings yet.';return}
-  rows.forEach(r=>{const p=document.createElement('div');p.className='logrow';const title=document.createElement('b');title.textContent=r.title+' · '+r.score+'%';const details=document.createElement('p');details.className='tiny muted';details.textContent='Finished '+new Date(r.at).toLocaleDateString()+' • '+(r.feedback||'Reading completed');p.append(title,details);box.appendChild(p)});
+  rows.forEach(r=>{const p=document.createElement('div');p.className='logrow';const title=document.createElement('b');title.textContent=r.title+' · '+r.score+'%';const details=document.createElement('p');details.className='tiny muted';details.textContent='Finished '+new Date(r.at).toLocaleDateString()+' • '+(r.feedback||'Reading completed');p.append(title,details);if(r.response){const open=document.createElement('details');const sum=document.createElement('summary');sum.textContent='View Gabriella’s written answer';const answer=document.createElement('p');answer.textContent=r.response;open.append(sum,answer);p.append(open)}if(r.answers){const a=document.createElement('p');a.className='tiny muted';a.textContent='Selected answers: '+r.answers.map(v=>(v.correct?'✓ ':'✗ ')+v.answer).join(' | ');p.append(a)}box.appendChild(p)});
  }
  document.querySelector('.tab[data-view="mom"]')?.addEventListener('click',refresh);
  window.addEventListener('cloudberry:save',refresh);
@@ -804,14 +829,14 @@ if(plan&&assigned&&data){
  const libraryHost=document.createElement('section');libraryHost.id='readingLibraryHost';
  const category=document.createElement('div');category.style.margin='0 0 12px';
  category.innerHTML='<label for="readingCategory"><b>Reading topic</b></label><select class="select" id="readingCategory"><option value="literature-tab">Stories & literature</option><option value="science-tab">Science readings</option><option value="social-tab">Social studies & government</option><option value="holiday-tab">Holidays & culture</option><option value="math">Math reading</option></select>';
- library.insertAdjacentElement('afterbegin',category);
+ // The subject tab already identifies the category; no second selector needed.
  const picker=document.getElementById('storySelect');
  const reset=document.createElement('button');reset.type='button';reset.className='soft';reset.textContent='Restore reading choices';reset.style.margin='10px 0';library.appendChild(reset);
  reset.onclick=()=>{if(!confirm('Restore finished readings to the active list? Existing reading grades in Mom’s View will be preserved.'))return;localStorage.removeItem('cloudberry:reading-completions:v2');location.reload()};
  const topicOf=title=>{
   if(/math|number|rounding|patterns|comparing|ordering/i.test(title))return 'math';
-  if(/science|runoff|flood|habitat|wildlife|water|tree|experiment|test|weather|river/i.test(title))return 'science-tab';
-  if(/government|constitution|declaration|election|geography|citizen|community|civic|map/i.test(title))return 'social-tab';
+  if(/science|runoff|flood|habitat|wildlife|water|tree|experiment|fair test|weather/i.test(title))return 'science-tab';
+  if(/government|constitution|declaration|election|geography|citizen|communit|civic|map|river/i.test(title))return 'social-tab';
   if(/heritage|halloween|christmas|muertos|thanksgiving|holiday|celebrat|festival/i.test(title))return 'holiday-tab';
   return 'literature-tab';
  };
