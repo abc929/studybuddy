@@ -133,80 +133,7 @@ function render(){
 }
 sel.addEventListener('change',render);
 document.getElementById('nextStory').addEventListener('click',()=>{sel.selectedIndex=(sel.selectedIndex+1)%sel.options.length;render()});
-document.getElementById('printStory').addEventListener('click',()=>{const x=stories[Number(sel.value)||0];const w=window.open('','_blank');if(!w){alert('Please allow pop-ups to print this reading.');return}const d=w.document;d.open();d.write("<!doctype html><html><head><title>Cloudberry Reading</title><style>body{font:18px/1.7 Georgia,serif;max-width:720px;margin:45px auto;padding:20px}h1{font:bold 28px Arial}p{margin-bottom:20px}</style></head><body><h1 id=\"heading\"></h1><div id=\"pages\"></div><script>
-(function(){
- const nav=document.querySelector('nav.tabs');
- const today=document.getElementById('today'), bju=document.getElementById('bjuReading'),library=document.getElementById('readingLibrary');
- if(!nav||!today||!bju||!library)return;
- const names=[['bju-tab','📚 BJU Reading'],['science-tab','🔬 Science'],['social-tab','🌎 Social Studies'],['holiday-tab','🎉 Holidays'],['literature-tab','📖 Stories']];
- const anchor=nav.querySelector('[data-view="learn"]');
- const views={};
- names.forEach(([id,label])=>{
-  const tab=document.createElement('button');tab.className='tab';tab.dataset.view=id;tab.textContent=label;nav.insertBefore(tab,anchor);
-  const view=document.createElement('section');view.className='view';view.id=id;view.style.paddingBottom='24px';
-  const head=document.createElement('h2');head.textContent=label;head.style.margin='10px 0 15px';view.appendChild(head);
-  document.querySelector('main').appendChild(view);views[id]=view;
-  // Compatible with the app's existing tab navigation.
-  tab.addEventListener('click',()=>{
-    document.querySelectorAll('.view').forEach(x=>x.classList.toggle('active',x.id===id));
-    nav.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x===tab));
-    window.scrollTo({top:0,behavior:'smooth'});
-  });
- });
- views['bju-tab'].appendChild(bju);
- const bjuHint=document.createElement('p');bjuHint.className='notice';bjuHint.textContent='Read today’s BJU selection, learn the words, then scroll just below the story to answer and submit the comprehension questions.';bju.insertAdjacentElement('beforebegin',bjuHint);
- const math=document.getElementById('math'),science=document.getElementById('science-fair');
- const civics=document.getElementById('marylandCivics');
- if(civics)views['social-tab'].appendChild(civics);
- // The reading list is one shared editor; a subject menu updates it rather than cloning IDs.
- const libraryViews=['science-tab','social-tab','holiday-tab','literature-tab','math'];
- const libraryHost=document.createElement('section');libraryHost.id='readingLibraryHost';
- const category=document.createElement('div');category.style.margin='0 0 12px';
- category.innerHTML='<label for="readingCategory"><b>Reading topic</b></label><select class="select" id="readingCategory"><option value="literature-tab">Stories & literature</option><option value="science-tab">Science readings</option><option value="social-tab">Social studies & government</option><option value="holiday-tab">Holidays & culture</option><option value="math">Math reading</option></select>';
- library.insertAdjacentElement('afterbegin',category);
- const picker=document.getElementById('storySelect');
- const reset=document.createElement('button');reset.type='button';reset.className='soft';reset.textContent='Restore reading choices';reset.style.margin='10px 0';library.appendChild(reset);
- reset.onclick=()=>{if(!confirm('Restore finished readings to the active list? Existing reading grades in Mom’s View will be preserved.'))return;localStorage.removeItem('cloudberry:reading-completions:v2');location.reload()};
- const topicOf=title=>{
-  if(/math|number|rounding|patterns|comparing|ordering/i.test(title))return 'math';
-  if(/science|runoff|flood|habitat|wildlife|water|tree|experiment|test|weather|river/i.test(title))return 'science-tab';
-  if(/government|constitution|declaration|election|geography|citizen|community|civic|map/i.test(title))return 'social-tab';
-  if(/heritage|halloween|christmas|muertos|thanksgiving|holiday|celebrat|festival/i.test(title))return 'holiday-tab';
-  return 'literature-tab';
- };
- function filter(topic){
-   document.getElementById('readingCategory').value=topic;
-   const all=[...picker.options];let count=0;
-   all.forEach(opt=>{const match=topicOf(opt.textContent)===topic;opt.hidden=!match;opt.disabled=!match;if(match)count++});
-   const first=all.find(o=>!o.disabled);
-   if(first){picker.value=first.value;picker.dispatchEvent(new Event('change'))}
-   else {const blank=document.getElementById('storyText');if(blank)blank.textContent='No unfinished readings in this subject. Completed work remains in Mom’s View.';const q=document.getElementById('readingCheck');if(q)q.replaceChildren()}
-   return count;
- }
- document.getElementById('readingCategory').addEventListener('change',e=>activateTopic(e.target.value));
- function activateTopic(topic){
-   const host=topic==='math'?math:views[topic];
-   if(host&&library.parentElement!==host)host.appendChild(library);
-   filter(topic);
- }
- // Subject tabs retrieve their own reading selections.
- for(const topic of libraryViews){
-   const tab=nav.querySelector('[data-view="'+topic+'"]');
-   if(tab)tab.addEventListener('click',()=>{activateTopic(topic)});
- }
- // A simple "Reading" card stays dedicated to BJU and is never buried under Today.
- const style=document.createElement('style');
- style.textContent='#bjuReading{margin:10px 0}#readingLibrary{margin-top:16px}#readingLibrary article{max-width:68ch}.tab{white-space:nowrap}';
- document.head.appendChild(style);
- activateTopic('literature-tab');
- // Read & Learn had no easy way to find completed work; restore makes this recoverable.
- const goHelp=document.createElement('p');goHelp.className='notice';goHelp.innerHTML='🧩 <b>Stuck on a lesson?</b> Open <b>Learn</b> for guided practice and hints. In Math, study worked examples before doing the chapter problems.';
- const learn=document.getElementById('learn');if(learn)learn.insertBefore(goHelp,learn.firstChild);
- const vid=document.createElement('p');vid.innerHTML='🎥 <a href="https://www.youtube.com/results?search_query=Math+Antics+place+value+regrouping" target="_blank" rel="noopener noreferrer">Watch Math Antics videos on place value and regrouping ↗</a>';
- const dm=document.getElementById('dailyMath');if(dm)dm.prepend(vid);
- // Ensure Today remains just the calendar plan, prayer, gratitude, and check-offs.
-})();
-</script></body></html>");d.close();d.getElementById('heading').textContent=x[0];x[1].forEach(t=>{const p=d.createElement('p');p.textContent=t;d.getElementById('pages').appendChild(p)});w.focus();w.print()});
+document.getElementById('printStory').addEventListener('click',()=>{const x=stories[Number(sel.value)||0];const w=window.open('','_blank');if(!w){alert('Please allow pop-ups to print this reading.');return}const d=w.document;d.open();d.write("<!doctype html><html><head><title>Cloudberry Reading</title><style>body{font:18px/1.7 Georgia,serif;max-width:720px;margin:45px auto;padding:20px}h1{font:bold 28px Arial}p{margin-bottom:20px}</style></head><body><h1 id=\"heading\"></h1><div id=\"pages\"></div></body></html>");d.close();d.getElementById('heading').textContent=x[0];x[1].forEach(t=>{const p=d.createElement('p');p.textContent=t;d.getElementById('pages').appendChild(p)});w.focus();w.print()});
 sel.selectedIndex=0;render();
 })();
 </script>
@@ -846,5 +773,78 @@ if(plan&&assigned&&data){
  document.getElementById('mathMode').onchange=render;render();
 
  document.getElementById('mathExplain').onclick=()=>{const t=document.getElementById('mathExpression').value.trim().replaceAll(',',''),match=t.match(/^(\d{1,8})\s*([+\-−×*])\s*(\d{1,8})$/),box=document.getElementById('mathCustomSteps');if(!match){box.textContent='Type two whole numbers with +, −, or × (example: 704 - 268).';return}const a=Number(match[1]),b=Number(match[3]),op=match[2]==='+'?'add':match[2]==='-'||match[2]==='−'?'subtract':'multiply';if(op==='multiply'&&b>9){box.textContent='This guide currently explains one-digit multipliers. Try a one-digit example or ask Mom for help with longer multiplication.';return}box.innerHTML=worked(a,b,op)};
+})();
+</script><script>
+(function(){
+ const nav=document.querySelector('nav.tabs');
+ const today=document.getElementById('today'), bju=document.getElementById('bjuReading'),library=document.getElementById('readingLibrary');
+ if(!nav||!today||!bju||!library)return;
+ const names=[['bju-tab','📚 BJU Reading'],['science-tab','🔬 Science'],['social-tab','🌎 Social Studies'],['holiday-tab','🎉 Holidays'],['literature-tab','📖 Stories']];
+ const anchor=nav.querySelector('[data-view="learn"]');
+ const views={};
+ names.forEach(([id,label])=>{
+  const tab=document.createElement('button');tab.className='tab';tab.dataset.view=id;tab.textContent=label;nav.insertBefore(tab,anchor);
+  const view=document.createElement('section');view.className='view';view.id=id;view.style.paddingBottom='24px';
+  const head=document.createElement('h2');head.textContent=label;head.style.margin='10px 0 15px';view.appendChild(head);
+  document.querySelector('main').appendChild(view);views[id]=view;
+  // Compatible with the app's existing tab navigation.
+  tab.addEventListener('click',()=>{
+    document.querySelectorAll('.view').forEach(x=>x.classList.toggle('active',x.id===id));
+    nav.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x===tab));
+    window.scrollTo({top:0,behavior:'smooth'});
+  });
+ });
+ views['bju-tab'].appendChild(bju);
+ const bjuHint=document.createElement('p');bjuHint.className='notice';bjuHint.textContent='Read today’s BJU selection, learn the words, then scroll just below the story to answer and submit the comprehension questions.';bju.insertAdjacentElement('beforebegin',bjuHint);
+ const math=document.getElementById('math'),science=document.getElementById('science-fair');
+ const civics=document.getElementById('marylandCivics');
+ if(civics)views['social-tab'].appendChild(civics);
+ // The reading list is one shared editor; a subject menu updates it rather than cloning IDs.
+ const libraryViews=['science-tab','social-tab','holiday-tab','literature-tab','math'];
+ const libraryHost=document.createElement('section');libraryHost.id='readingLibraryHost';
+ const category=document.createElement('div');category.style.margin='0 0 12px';
+ category.innerHTML='<label for="readingCategory"><b>Reading topic</b></label><select class="select" id="readingCategory"><option value="literature-tab">Stories & literature</option><option value="science-tab">Science readings</option><option value="social-tab">Social studies & government</option><option value="holiday-tab">Holidays & culture</option><option value="math">Math reading</option></select>';
+ library.insertAdjacentElement('afterbegin',category);
+ const picker=document.getElementById('storySelect');
+ const reset=document.createElement('button');reset.type='button';reset.className='soft';reset.textContent='Restore reading choices';reset.style.margin='10px 0';library.appendChild(reset);
+ reset.onclick=()=>{if(!confirm('Restore finished readings to the active list? Existing reading grades in Mom’s View will be preserved.'))return;localStorage.removeItem('cloudberry:reading-completions:v2');location.reload()};
+ const topicOf=title=>{
+  if(/math|number|rounding|patterns|comparing|ordering/i.test(title))return 'math';
+  if(/science|runoff|flood|habitat|wildlife|water|tree|experiment|test|weather|river/i.test(title))return 'science-tab';
+  if(/government|constitution|declaration|election|geography|citizen|community|civic|map/i.test(title))return 'social-tab';
+  if(/heritage|halloween|christmas|muertos|thanksgiving|holiday|celebrat|festival/i.test(title))return 'holiday-tab';
+  return 'literature-tab';
+ };
+ function filter(topic){
+   document.getElementById('readingCategory').value=topic;
+   const all=[...picker.options];let count=0;
+   all.forEach(opt=>{const match=topicOf(opt.textContent)===topic;opt.hidden=!match;opt.disabled=!match;if(match)count++});
+   const first=all.find(o=>!o.disabled);
+   if(first){picker.value=first.value;picker.dispatchEvent(new Event('change'))}
+   else {const blank=document.getElementById('storyText');if(blank)blank.textContent='No unfinished readings in this subject. Completed work remains in Mom’s View.';const q=document.getElementById('readingCheck');if(q)q.replaceChildren()}
+   return count;
+ }
+ document.getElementById('readingCategory').addEventListener('change',e=>activateTopic(e.target.value));
+ function activateTopic(topic){
+   const host=topic==='math'?math:views[topic];
+   if(host&&library.parentElement!==host)host.appendChild(library);
+   filter(topic);
+ }
+ // Subject tabs retrieve their own reading selections.
+ for(const topic of libraryViews){
+   const tab=nav.querySelector('[data-view="'+topic+'"]');
+   if(tab)tab.addEventListener('click',()=>{activateTopic(topic)});
+ }
+ // A simple "Reading" card stays dedicated to BJU and is never buried under Today.
+ const style=document.createElement('style');
+ style.textContent='#bjuReading{margin:10px 0}#readingLibrary{margin-top:16px}#readingLibrary article{max-width:68ch}.tab{white-space:nowrap}';
+ document.head.appendChild(style);
+ activateTopic('literature-tab');
+ // Read & Learn had no easy way to find completed work; restore makes this recoverable.
+ const goHelp=document.createElement('p');goHelp.className='notice';goHelp.innerHTML='🧩 <b>Stuck on a lesson?</b> Open <b>Learn</b> for guided practice and hints. In Math, study worked examples before doing the chapter problems.';
+ const learn=document.getElementById('learn');if(learn)learn.insertBefore(goHelp,learn.firstChild);
+ const vid=document.createElement('p');vid.innerHTML='🎥 <a href="https://www.youtube.com/results?search_query=Math+Antics+place+value+regrouping" target="_blank" rel="noopener noreferrer">Watch Math Antics videos on place value and regrouping ↗</a>';
+ const dm=document.getElementById('dailyMath');if(dm)dm.prepend(vid);
+ // Ensure Today remains just the calendar plan, prayer, gratitude, and check-offs.
 })();
 </script></body></html>
