@@ -139,10 +139,16 @@ function render(){
  choices.forEach((p,i)=>{
    const group=document.createElement('fieldset');group.style.cssText='border:1px solid #ead0dc;border-radius:11px;margin:12px 0;padding:12px';
    const legend=document.createElement('legend');legend.textContent=(i+1)+'. Which detail is supported by this reading?';group.appendChild(legend);
-   const accurate=p.split(/(?<=[.!?])\s+/)[0].trim();
-   const unrelated=stories.filter(z=>z[0]!==x[0]).slice(i*3,i*3+2).map(z=>z[1][0].split(/(?<=[.!?])\s+/)[0].trim());
-   const opts=[accurate,...unrelated];while(opts.length<3)opts.push('The passage does not explain this idea.');
-   const rotated=[...opts.slice(i%3),...opts.slice(0,i%3)];
+   const accurate=p.split(/(?<=[.!?])\\s+/)[0].trim();
+   // Distractors must concern the SAME reading; never borrow sentences from unrelated subjects.
+   const related=paragraphs.filter((_,j)=>j!==i).map(t=>t.split(/(?<=[.!?])\\s+/)[0].trim());
+   const correct=accurate;
+   const distractors=[
+     'The passage proves that '+(x[0].replace(/^[^:]+:\\s*/,''))+' has only one cause and no exceptions.',
+     'The author argues that evidence and alternative explanations are unnecessary for this topic.'
+   ];
+   const opts=[correct,...distractors];const offset=i%3;
+   const rotated=[...opts.slice(offset),...opts.slice(0,offset)];
    rotated.forEach((option,j)=>{const label=document.createElement('label');label.style.cssText='display:block;padding:7px';const radio=document.createElement('input');radio.type='radio';radio.name='readQ'+i;radio.value=String(rotated.indexOf(accurate)===j?1:0);label.append(radio,document.createTextNode(' '+option));group.appendChild(label)});
    form.appendChild(group);
  });
