@@ -913,7 +913,8 @@ if(plan&&assigned&&data){
   const panel=document.createElement('section');panel.className='card';panel.id='chapter2Estimation';
   panel.style.cssText='margin:16px 0;border:2px solid #b6d3df;background:#f7fbff';
   panel.innerHTML='<h2>⭐ Chapter 2 · Estimation Practice</h2><p>Estimate before finding an exact sum or difference. Round both numbers to the same place, then calculate.</p><div class="notice"><b>Worked example:</b> 4,768 + 2,587<br>Nearest thousand: 5,000 + 3,000 ≈ <b>8,000</b><br>Nearest hundred: 4,800 + 2,600 ≈ <b>7,400</b><br>Exact sum: <b>7,355</b>. Notice the nearest-hundred estimate is closer.</div><label for="estimatePlace"><b>Round to the nearest</b></label><select id="estimatePlace" class="select"><option value="100">Hundred</option><option value="1000">Thousand</option></select><div id="estimateQuestion" style="font-weight:700;font-size:1.15rem;margin:12px 0"></div><input id="estimateAnswer" class="textinput" inputmode="numeric" placeholder="Enter estimated answer"><div class="practiceactions"><button type="button" class="primary" id="estimateCheck">Check my estimate</button><button type="button" class="soft" id="estimateNext">Try another</button></div><p id="estimateFeedback" role="status"></p>';
-  mathView.appendChild(panel);
+  const chapterCheck=mathView.querySelector('#singaporeChapterQuiz');
+  if(chapterCheck)mathView.insertBefore(panel,chapterCheck);else mathView.appendChild(panel);
   const problems=[[4768,2587,'+'],[8235,3749,'−'],[5696,2188,'+'],[9054,4876,'−'],[3895,4722,'+'],[7640,2965,'−']];
   let questionIndex=0;
   const round=(v,place)=>Math.round(v/place)*place;
