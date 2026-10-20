@@ -525,7 +525,7 @@ update();document.addEventListener('visibilitychange',()=>{if(!document.hidden)u
 const box=document.getElementById('lessonPlanToday');if(!box)return;
 function update(){
 const d=new Date(),day=d.getDay(),isCoop=day===2,iso=[d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-');
-const math=iso==='2026-10-13'?'Singapore Dimensions 4A · Chapter 1, Lesson 7 (finish chapter)':iso<'2026-10-13'?'Singapore Dimensions 4A · Chapter 1, Lessons 1–6 complete':'Singapore Dimensions Math 4A · Chapter 2 (4A 2-x = Chapter 2, Lesson x) · Textbook problems 2, 3 and 5';
+const math=iso==='2026-10-20'?'Singapore Dimensions Math 4A · Chapter 2, Lesson 4 (4A 2-4)':iso==='2026-10-19'?'Singapore Dimensions Math 4A · Chapter 2, Lesson 3 (4A 2-3)':iso==='2026-10-13'?'Singapore Dimensions 4A · Chapter 1, Lesson 7 (finish chapter)':iso<'2026-10-13'?'Singapore Dimensions 4A · Chapter 1, Lessons 1–6 complete':'Singapore Dimensions Math 4A · Chapter 2 (4A 2-x = Chapter 2, Lesson x) · Textbook problems 2, 3 and 5';
 const bju={
 '2026-10-12':['The Elephant · The Vulture · The Scorpion',24,'Poetry',[]],
 '2026-10-14':['Chinchilla!',26,'Realistic fiction',['chaos','frantic','gushed','pursuit','typical']],
@@ -536,13 +536,16 @@ const bju={
 const assigned=bju[iso];
 const bjuLine=assigned?'📚 BJU Reading 5 · '+assigned[0]+' · page '+assigned[1]+' · '+assigned[2]:'📚 BJU Reading 5 · no new story assigned today';
 const tasks=day===0||day===6?[]:isCoop?[
-['🙏 11:00 · Prayer and gratitude',''],
+['🙏 Prayer and gratitude',''],
+['🍽️ Breakfast',''],
+['💊 AM Meds · check when taken',''],
 ['🧪 Co-op · Science, cryptology, Strong Minds and clay',''],
 ['➗ '+math,''],
 [bjuLine,'']
 ]:[
 ['🙏 11:00 · Prayer and daily goals',''],
 ['🍽️ 11:15 · Breakfast',''],
+['💊 AM Meds · check when taken',''],
 ['📖 11:35 · The Good and the Beautiful Grade 5 · assigned lesson','https://courses.goodandbeautiful.com/'],
 ['12:10 · '+bjuLine,''],
 ['🔬 12:35 · Miacademy Structures of Science · assigned lesson','https://miacademy.co/login?Flavor=Practice&isAssignmentMode=False'],
@@ -570,7 +573,9 @@ function updateCount(){const num=tasks.filter((_,i)=>completed[i]).length;counte
 tasks.forEach(([label,url],i)=>{
  const row=document.createElement('div');row.style.cssText='display:flex;align-items:center;gap:12px;padding:11px;border:1px solid #efdae8;border-radius:13px;background:#fff';
  const checkbox=document.createElement('input');checkbox.type='checkbox';checkbox.checked=!!completed[i];checkbox.style.cssText='width:23px;height:23px;accent-color:#548a61;flex-shrink:0';checkbox.setAttribute('aria-label','Finished: '+label);
- const text=document.createElement('span');text.style.cssText='flex:1;min-width:0;overflow-wrap:anywhere';if(url){const link=document.createElement('a');link.href=url;link.target='_blank';link.rel='noopener noreferrer';link.textContent=label+' ↗';text.appendChild(link)}else text.textContent=label;
+ const text=document.createElement('span');text.style.cssText='flex:1;min-width:0;overflow-wrap:anywhere';const internal= /BJU Reading/.test(label)?'bju-tab':/Math practice|Singapore Dimensions Math/.test(label)?'math':/Science Fair/.test(label)?'science-fair':/Social studies/.test(label)&&!url?'social-tab':/Science reading/.test(label)?'science-tab':null;
+ if(internal){const link=document.createElement('a');link.href='#'+internal;link.textContent=label+' ↗';link.addEventListener('click',e=>{e.preventDefault();const tab=document.querySelector('.tab[data-view="'+internal+'"]');if(tab)tab.click();});text.appendChild(link)}
+ else if(url){const link=document.createElement('a');link.href=url;link.target='_blank';link.rel='noopener noreferrer';link.textContent=label+' ↗';text.appendChild(link)}else text.textContent=label;
  const styleRow=()=>{text.style.textDecoration=checkbox.checked?'line-through':'none';text.style.opacity=checkbox.checked?'.55':'1'};styleRow();
  checkbox.addEventListener('change',()=>{completed[i]=checkbox.checked;localStorage.setItem(key,JSON.stringify(completed));styleRow();updateCount();window.dispatchEvent(new CustomEvent('cloudberry:save'))});
  row.append(checkbox,text);list.appendChild(row);
