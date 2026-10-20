@@ -139,12 +139,12 @@ function render(){
  choices.forEach((p,i)=>{
    const group=document.createElement('fieldset');group.style.cssText='border:1px solid #ead0dc;border-radius:11px;margin:12px 0;padding:12px';
    const legend=document.createElement('legend');legend.textContent=(i+1)+'. Which detail is supported by this reading?';group.appendChild(legend);
-   const accurate=p.split(/(?<=[.!?])\\s+/)[0].trim();
+   const accurate=p.split(/(?<=[.!?])\s+/)[0].trim();
    // Distractors must concern the SAME reading; never borrow sentences from unrelated subjects.
-   const related=paragraphs.filter((_,j)=>j!==i).map(t=>t.split(/(?<=[.!?])\\s+/)[0].trim());
+   const related=paragraphs.filter((_,j)=>j!==i).map(t=>t.split(/(?<=[.!?])\s+/)[0].trim());
    const correct=accurate;
    const distractors=[
-     'The passage proves that '+(x[0].replace(/^[^:]+:\\s*/,''))+' has only one cause and no exceptions.',
+     'The passage proves that '+(x[0].replace(/^[^:]+:\s*/,''))+' has only one cause and no exceptions.',
      'The author argues that evidence and alternative explanations are unnecessary for this topic.'
    ];
    const opts=[correct,...distractors];const offset=i%3;
