@@ -859,7 +859,7 @@ if(plan&&assigned&&data){
  const civics=document.getElementById('marylandCivics');
  if(civics)views['social-tab'].appendChild(civics);
  const topicFor=title=>{
-  if(/math|number|rounding|patterns|comparing|ordering/i.test(title))return 'math';
+  if(/math|number|rounding|patterns|comparing|ordering/i.test(title))return 'hidden-math-reading';
   if(/geography|river|government|constitution|declaration|election|citizen|communit|civic|map/i.test(title))return 'social-tab';
   if(/science|runoff|flood|habitat|wildlife|water|tree|experiment|fair test|weather/i.test(title))return 'science-tab';
   return 'literature-tab'; // Holiday fiction belongs here too.
@@ -872,7 +872,7 @@ if(plan&&assigned&&data){
  const duplicateReset=library.querySelectorAll('button');
  // Show each reading subject only its own selections, not another category selector.
  const empty=document.createElement('p');empty.className='tiny muted';empty.id='subjectReadingEmpty';
- const activeTopics=['math','science-tab','social-tab','literature-tab'];
+ const activeTopics=['science-tab','social-tab','literature-tab'];
  function showTopic(topic){
   const target=views[topic];if(!target)return;
   target.appendChild(library);
