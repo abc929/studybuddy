@@ -26,6 +26,24 @@ function setParentAccess(enabled) {
     }
   }
   document.querySelectorAll('#momGradeDashboard').forEach(el => { el.hidden = !enabled; });
+  // Parent-only navigation: never display student lessons behind Mom's View.
+  document.querySelectorAll('.tab').forEach(tab => {
+    tab.hidden = enabled ? tab !== parentTab : tab === parentTab;
+  });
+  if (enabled) {
+    document.querySelectorAll('.view').forEach(view => {
+      const isMom = view.id === 'mom';
+      view.classList.toggle('active', isMom);
+      view.hidden = !isMom;
+    });
+    if (parentTab) parentTab.classList.add('active');
+    document.querySelectorAll('.tab').forEach(tab => {
+      if (tab !== parentTab) tab.classList.remove('active');
+    });
+    window.scrollTo(0, 0);
+  } else {
+    document.querySelectorAll('.view').forEach(view => { view.hidden = view.id === 'mom'; });
+  }
 }
 setParentAccess(false);
 const configured = ['apiKey', 'authDomain', 'projectId', 'appId']
