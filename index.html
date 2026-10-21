@@ -605,7 +605,7 @@ tasks.forEach(([label,url],i)=>{
  if(internal){const link=document.createElement('a');link.href='#'+internal;link.textContent=label+' ↗';link.addEventListener('click',e=>{e.preventDefault();const tab=document.querySelector('.tab[data-view="'+internal+'"]');if(tab)tab.click();});text.appendChild(link)}
  else if(url){const link=document.createElement('a');link.href=url;link.target='_blank';link.rel='noopener noreferrer';link.textContent=label+' ↗';text.appendChild(link)}else text.textContent=label;
  const styleRow=()=>{text.style.textDecoration=checkbox.checked?'line-through':'none';text.style.opacity=checkbox.checked?'.55':'1'};styleRow();
- checkbox.addEventListener('change',()=>{completed[i]=checkbox.checked;localStorage.setItem(key,JSON.stringify(completed));styleRow();updateCount();const api=window.cloudberryStateApi;if(api){const current=api.exportState();current.dailyPlanChecks=current.dailyPlanChecks||{};current.dailyPlanChecks[iso]={...completed};api.importState(current);window.dispatchEvent(new CustomEvent('cloudberry:save',{detail:JSON.parse(JSON.stringify(api.exportState()))}));}else{window.dispatchEvent(new CustomEvent('cloudberry:save'))}});
+ checkbox.addEventListener('change',()=>{completed[i]=checkbox.checked;localStorage.setItem(key,JSON.stringify(completed));styleRow();updateCount();const api=window.cloudberryStateApi;if(api){const current=api.exportState();current.dailyPlanChecks=current.dailyPlanChecks||{};current.dailyPlanChecks[iso]={...completed};if(/BJU Reading/.test(label)){current.readingLog=current.readingLog||[];const entryId='bju:'+iso;current.readingLog=current.readingLog.filter(r=>r.id!==entryId);if(checkbox.checked)current.readingLog.push({id:entryId,date:iso,title:label.replace(/^.*?BJU Reading 5/,'BJU Reading 5'),source:'BJU Reading 5',type:/poetry|poem/i.test(label)?'Poetry':'Assigned reading',status:'Reading completed',assessment:'Not assessed',at:new Date().toISOString()});}api.importState(current);window.dispatchEvent(new CustomEvent('cloudberry:save',{detail:JSON.parse(JSON.stringify(api.exportState()))}));}else{window.dispatchEvent(new CustomEvent('cloudberry:save'))}});
  row.append(checkbox,text);list.appendChild(row);
 });
 const counter=document.createElement('p');counter.className='tiny muted';counter.setAttribute('role','status');updateCount();box.append(counter,list);
@@ -791,13 +791,25 @@ if(plan&&assigned&&data){
   let records={};try{records=JSON.parse(localStorage.getItem('cloudberry:reading-completions:v2')||'{}')||{}}catch(e){}
   const fromState=window.cloudberryStateApi?.exportState()?.readingGrades||[];
   fromState.forEach(r=>{if(!records[r.title]||new Date(r.at)>new Date(records[r.title].at))records[r.title]=r});
+  const state=window.cloudberryStateApi?.exportState()||{};
+  const log=Array.isArray(state.readingLog)?state.readingLog:[];
+  const bjuLog=log.filter(r=>r.source==='BJU Reading 5');
+  const logHeader=document.createElement('div');
+  logHeader.innerHTML='<h3>Homeschool reading log</h3><p class="muted tiny">Dated reading evidence for the spring portfolio review. Reading completion does not imply a comprehension grade.</p>';
+  box.replaceChildren();box.appendChild(logHeader);
+  bjuLog.sort((a,b)=>String(b.date).localeCompare(String(a.date))).forEach(r=>{
+    const entry=document.createElement('div');entry.className='logrow';
+    const heading=document.createElement('b');heading.textContent=r.date+' · '+r.title;
+    const info=document.createElement('p');info.className='tiny muted';info.textContent=r.type+' · '+r.status+' · '+r.assessment;
+    entry.append(heading,info);box.appendChild(entry);
+  });
   const rows=Object.values(records).sort((a,b)=>new Date(b.at)-new Date(a.at));
   // Preserve open-response answers in the parent report instead of displaying grades alone.
-  box.replaceChildren();if(!rows.length){box.textContent='No finished readings yet.';return}
+  if(!rows.length&&!bjuLog.length){const empty=document.createElement('p');empty.textContent='No recorded completed readings yet.';box.appendChild(empty);return}
   rows.forEach(r=>{const p=document.createElement('div');p.className='logrow';const title=document.createElement('b');title.textContent=r.title+' · '+(r.score==null?'Awaiting review':r.score+'%');const details=document.createElement('p');details.className='tiny muted';details.textContent='Finished '+new Date(r.at).toLocaleDateString()+' • '+(r.feedback||'Reading completed');p.append(title,details);if(r.response){const open=document.createElement('details');const sum=document.createElement('summary');sum.textContent='View Gabriella’s written answer';const answer=document.createElement('p');answer.textContent=r.response;open.append(sum,answer);p.append(open)}if(r.answers){const a=document.createElement('p');a.className='tiny muted';a.textContent='Selected answers: '+r.answers.map(v=>(v.correct?'✓ ':'✗ ')+v.answer).join(' | ');p.append(a)}box.appendChild(p)});
  }
  document.querySelector('.tab[data-view="mom"]')?.addEventListener('click',refresh);
- window.addEventListener('cloudberry:save',refresh);
+ window.addEventListener('cloudberry:save',refresh);window.addEventListener('cloudberry:remote-update',refresh);
  refresh();
 })();
 </script><script>
