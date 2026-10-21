@@ -674,7 +674,21 @@ const assigned=dayPlan?[iso,dayPlan[0],dayPlan[1],dayPlan[3]]:stories.find(x=>x[
 const readingEnd=dayPlan?dayPlan[2]:null;
 const lastPart=!dayPlan || !['2026-10-15'].includes(iso);
 
-const data=assigned&&support[assigned[1]];
+const genreGuides={
+'Poetry':['Poetry uses imagery and rhythm.','What is the main idea?','Which words establish the mood?'],
+'Bible account':['A Bible account describes events and teachings in Scripture.','Who is speaking, and to whom?','What message is communicated?'],
+'Fantasy':['Fantasy includes imagined or impossible events.','What is the main conflict?','Which details make this fantasy?'],
+'Myth':['A myth is a traditional story often explaining beliefs or origins.','What does the story explain?','What values appear in the story?'],
+'Informational text':['Informational writing communicates facts.','What is the central idea?','Which details support it?'],
+'Biography':['A biography tells the life of a real person.','What challenge did the person face?','Why is this person remembered?'],
+'Realistic fiction':['Realistic fiction is invented but could happen.','What problem does the character face?','What theme is supported by events?'],
+'Fable':['A fable teaches a moral.','What choices do the characters make?','What is the moral?'],
+'Folktale':['A folktale is a traditional story passed down over time.','How is the problem resolved?','What lesson does it teach?'],
+'Science fiction':['Science fiction imagines science-based possibilities.','What scientific ideas appear?','What details are imagined?'],
+'Oral history':['Oral history records firsthand memories.','Whose experience is described?','What historical details matter?'],
+'Allegory':['An allegory uses symbols to express deeper ideas.','What might the characters symbolize?','What message does the author convey?']
+};
+const data=assigned&&(support[assigned[1]]||(()=>{const g=genreGuides[assigned[3]]||genreGuides['Realistic fiction'];return {words:[],focus:assigned[3],definition:g[0],concept:'Use evidence from the assigned text to support your thinking.',questions:[g[1],g[2],'Find a detail in the reading that supports your answer. Explain why.']}})());
 const section=document.getElementById('bjuReading');
 const oldInput=document.getElementById('bjuWord'),oldButton=document.getElementById('bjuSpeak');
 if(oldInput){const label=section.querySelector('label[for="bjuWord"]');if(label)label.remove();oldInput.remove()}
@@ -688,7 +702,7 @@ function speak(word,button){
  if(status)status.textContent='Playing: '+word;
 }
 function wordList(target,words){
- if(!words.length){const p=document.createElement('p');p.textContent='No vocabulary words for this poetry selection.';target.appendChild(p);return}
+ if(!words.length){const p=document.createElement('p');p.textContent='No preset words. Use the Word Helper below for any word in this reading.';target.appendChild(p)}
  words.forEach(word=>{
  const row=document.createElement('div');row.style.cssText='padding:10px 0;border-bottom:1px solid #eedfe6';
  const button=document.createElement('button');button.type='button';button.className='soft';button.textContent='🔊 '+word;button.addEventListener('click',()=>speak(word,button));
@@ -696,6 +710,7 @@ function wordList(target,words){
  row.appendChild(button);row.appendChild(meaning);target.appendChild(row);
  });
 }
+const helper=document.createElement('div');helper.style.cssText='padding:12px;margin:12px 0;border:1px solid #dec4dc;border-radius:12px';helper.innerHTML='<h3>🔎 Word Helper · any BJU word</h3><p>Type a word from your reading to hear it aloud and check the built-in glossary.</p>';const wordInput=document.createElement('input');wordInput.placeholder='Word from the story';wordInput.setAttribute('aria-label','BJU vocabulary word');wordInput.style.cssText='padding:10px;max-width:100%';const pronounce=document.createElement('button');pronounce.type='button';pronounce.className='soft';pronounce.textContent='🔊 Hear word';pronounce.onclick=()=>{if(wordInput.value.trim())speak(wordInput.value.trim(),pronounce)};const define=document.createElement('button');define.type='button';define.className='soft';define.textContent='📖 Meaning';const meaning=document.createElement('p');meaning.setAttribute('aria-live','polite');define.onclick=()=>{const w=wordInput.value.trim().toLowerCase();meaning.textContent=definitions[w]||'Not in the built-in glossary. Look for clues in the sentence and check a dictionary.'};helper.append(wordInput,pronounce,define,meaning);story.parentElement.appendChild(helper);
 if(!assigned){
  story.innerHTML='<p><b>No new BJU story assigned today.</b> Your next scheduled story will appear on its reading day.</p>';
 }else{
