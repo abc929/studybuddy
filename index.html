@@ -264,6 +264,34 @@ document.getElementById('printStory').addEventListener('click',()=>{const x=stor
   if(/language arts|TGATB|good and the beautiful/i.test(label.textContent))label.textContent='The Good and the Beautiful — Lesson '+lesson+', Writing Option 1';
  });}
 })();
+</script><script>
+(function(){
+  // Remove obsolete legacy cards after all earlier scripts have inserted them.
+  const today=document.getElementById('today');
+  if(!today)return;
+  function clean(){
+    const plan=document.getElementById('dailyLessonPlan');
+    if(!plan)return;
+    const inner=document.getElementById('lessonPlanToday');
+    // Remove reading guide, science-fair teaser, and Chapter 2 practice shortcut,
+    // while keeping actual scheduled assignments and their user-operated checks.
+    const targets=[...today.querySelectorAll('section,article,div,a,button')];
+    for(const el of targets){
+      if(el===plan||el===inner||el.contains(plan)||el===document.getElementById('morningPrayer'))continue;
+      if(el.closest('#morningPrayer'))continue;
+      const heading=el.querySelector(':scope > h2,:scope > h3,:scope > h4');
+      const label=(heading?.textContent||el.matches('a,button')?el.textContent:'').trim();
+      if(/reading guide:|today.s science fair work|daily math practice\s*[·:]\s*chapter 2/i.test(label)){
+        if(el.matches('a,button')||heading){el.remove()}
+      }
+    }
+    const obsolete=[...today.querySelectorAll('a,button')].filter(e=>/daily math practice.*chapter 2/i.test(e.textContent||''));
+    obsolete.forEach(e=>e.remove());
+  }
+  clean();
+  const observer=new MutationObserver(()=>{observer.disconnect();clean();observer.observe(today,{childList:true,subtree:true})});
+  observer.observe(today,{childList:true,subtree:true});
+})();
 </script></body></html>");d.close();d.getElementById('heading').textContent=x[0];x[1].forEach(t=>{const p=d.createElement('p');p.textContent=t;d.getElementById('pages').appendChild(p)});w.focus();w.print()});
 sel.selectedIndex=0;render();
 })();
