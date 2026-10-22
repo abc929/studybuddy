@@ -232,6 +232,38 @@ document.getElementById('printStory').addEventListener('click',()=>{const x=stor
   }
  }
 })();
+</script><script>
+(function(){
+ const today=document.getElementById('today'),prayer=document.getElementById('morningPrayer'),plan=document.getElementById('dailyLessonPlan');
+ if(!today||!prayer||!plan)return;
+ // Today is a compact workspace: prayer, assignments, then user-checked work.
+ prayer.insertAdjacentElement('afterend',plan);
+ const wins=document.getElementById('taskList')?.closest('.card');
+ if(wins){plan.insertAdjacentElement('afterend',wins);wins.style.display='';}
+ [...today.children].forEach(child=>{if(child!==prayer&&child!==plan&&child!==wins)child.style.display='none'});
+ // Keep the actual named assignment visible instead of just the course name.
+ const now=new Date(),start=new Date(2026,9,22),date=new Date(now.getFullYear(),now.getMonth(),now.getDate());
+ const days=Math.max(0,Math.round((date-start)/86400000));
+ const lesson=13+days;
+ const list=document.getElementById('lessonPlanToday');
+ if(list){
+  list.querySelectorAll('li').forEach(li=>{
+   const text=li.textContent||'';
+   if(/good and the beautiful|TGATB/i.test(text)){
+    const a=li.querySelector('a');
+    const label='📖 The Good and the Beautiful Grade 5 — Lesson '+lesson+' — Writing Option 1 only';
+    if(a){a.textContent=label+' ↗';a.href='https://courses.goodandbeautiful.com/'}else li.textContent=label;
+   }
+   if(/Singapore|chapter 2|chapter 3|common multiples/i.test(text)&&/math|Singapore|➗/i.test(text))li.textContent='➗ Singapore Dimensions Math 4A — Chapter 3, Lesson 2: Common Multiples (5 problems, then estimation)';
+  });
+ }
+ // Make today's Little Wins labels match the active work without automatically checking them.
+ const tasks=document.getElementById('taskList');
+ if(tasks){const labels=tasks.querySelectorAll('.task span');labels.forEach(label=>{
+  if(/math|Singapore/i.test(label.textContent))label.textContent='Math — 4A Chapter 3, Lesson 2: Common Multiples';
+  if(/language arts|TGATB|good and the beautiful/i.test(label.textContent))label.textContent='The Good and the Beautiful — Lesson '+lesson+', Writing Option 1';
+ });}
+})();
 </script></body></html>");d.close();d.getElementById('heading').textContent=x[0];x[1].forEach(t=>{const p=d.createElement('p');p.textContent=t;d.getElementById('pages').appendChild(p)});w.focus();w.print()});
 sel.selectedIndex=0;render();
 })();
