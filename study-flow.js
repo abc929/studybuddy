@@ -25,6 +25,26 @@ var mathSteps = [
  ['4A Ch 4, Review 6','Mixed review','No new lesson until approved'],
  ['4A Ch 4, Review 7','Mixed review','No new lesson until approved']
 ];
+/* Short, directly linked topic lessons. One or two videos per unlocked Math lesson. */
+var mathVideos = [
+ [['Math Antics • Least Common Multiple (basic method)','https://www.youtube.com/watch?v=Nu6AC6X3_E4']],
+ [['Math Antics • Greatest Common Factor','https://www.youtube.com/watch?v=CUEOL3_Wm3Y'],['Math Antics • Prime Factorization','https://www.youtube.com/watch?v=XGbOiYhHY2c']],
+ [['Khan Academy • Prime and composite numbers','https://www.youtube.com/watch?v=3h4UK62Qrbo']],
+ [['Math Antics • Multi-Digit Multiplication, Part 1','https://www.youtube.com/watch?v=FJ5qLWP3Fqo']],
+ [['Math Antics • Multi-Digit Multiplication, Part 1','https://www.youtube.com/watch?v=FJ5qLWP3Fqo']],
+ [['Math Antics • Rounding','https://www.youtube.com/watch?v=fd-E18EqSVk'],['Math Antics • Multi-Digit Multiplication, Part 1','https://www.youtube.com/watch?v=FJ5qLWP3Fqo']],
+ [['Math Antics • Multi-Digit Multiplication, Part 2','https://www.youtube.com/watch?v=RVYwunbpMHA']],
+ [['Math Antics • Multi-Digit Multiplication, Part 2','https://www.youtube.com/watch?v=RVYwunbpMHA']],
+ [['Math Antics • Multi-Digit Multiplication, Part 2','https://www.youtube.com/watch?v=RVYwunbpMHA']],
+ [['Math Antics • Rounding','https://www.youtube.com/watch?v=fd-E18EqSVk'],['Math Antics • Multi-Digit Multiplication, Part 2','https://www.youtube.com/watch?v=RVYwunbpMHA']],
+ [['Math Antics • Multi-Digit Multiplication, Part 1','https://www.youtube.com/watch?v=FJ5qLWP3Fqo']],
+ [['Math Antics • Multi-Digit Multiplication, Part 2','https://www.youtube.com/watch?v=RVYwunbpMHA']],
+ [['Math Antics • Rounding','https://www.youtube.com/watch?v=fd-E18EqSVk']],
+ [['Math Antics • Multi-Digit Multiplication, Part 1','https://www.youtube.com/watch?v=FJ5qLWP3Fqo']],
+ [['Math Antics • Multi-Digit Multiplication, Part 2','https://www.youtube.com/watch?v=RVYwunbpMHA']],
+ [['Math Antics • Rounding','https://www.youtube.com/watch?v=fd-E18EqSVk']],
+ [['Math Antics • Multi-Digit Multiplication, Part 2','https://www.youtube.com/watch?v=RVYwunbpMHA']]
+];
 var bjuSteps = [
  ['The Beginning of the Armadillos',90,'Fantasy'],
  ['Nanabozho Makes the Earth',102,'Myth'],
@@ -136,7 +156,20 @@ var attempts={};try{attempts=JSON.parse(localStorage.getItem('cloudberry-math-at
 panel.replaceChildren();
 var h=document.createElement('h2');h.textContent='🔢 '+i.title;panel.append(h);
 var p=document.createElement('p');p.textContent='Follow the Singapore textbook examples. '+i.notes+'. Work through FIVE independent questions below. Checking your Math lesson in Today is the only way to unlock the next lesson.';panel.append(p);
-if(idx===0){var a=document.createElement('a');a.className='soft';a.target='_blank';a.rel='noopener noreferrer';a.href='https://www.youtube.com/results?search_query=Math+Antics+least+common+multiple';a.textContent='▶ Math Antics: common multiples video';panel.append(a);}
+// Video of the lesson stays with the current topic if she needs another day.
+var lessonVideos=mathVideos[idx]||mathVideos[mathVideos.length-1];
+var lessonBox=document.createElement('section');lessonBox.className='quizbox';lessonBox.style.cssText='margin:16px 0;background:#f2f4ff;border:1px solid #d9daf8';
+var videoHeading=document.createElement('h3');videoHeading.textContent='🎬 Watch before practicing • '+i.topic;lessonBox.append(videoHeading);
+var guidance=document.createElement('p');guidance.className='tiny muted';guidance.textContent='Start with the first video. When two videos are listed, watch both for this combined lesson. These are supplemental skill videos, not official Singapore textbook videos.';lessonBox.append(guidance);
+lessonVideos.forEach(function(v,n){var link=document.createElement('a');link.className='soft';link.style.cssText='display:block;margin:8px 0;padding:11px 14px;text-decoration:none';link.href=v[1];link.target='_blank';link.rel='noopener noreferrer';link.textContent='▶ Video '+(n+1)+': '+v[0]+' ↗';lessonBox.append(link);});
+var videoLabel=document.createElement('label');videoLabel.style.cssText='display:flex;align-items:center;gap:9px;margin:12px 0 0';
+var watched=document.createElement('input');watched.type='checkbox';watched.style.cssText='width:20px;height:20px;accent-color:#56856e';
+var watchedKey='cloudberry-math-videos-watched-'+idx;
+watched.checked=localStorage.getItem(watchedKey)==='yes';
+watched.onchange=function(){localStorage.setItem(watchedKey,watched.checked?'yes':'no');};
+videoLabel.append(watched,document.createTextNode('I watched the video lesson and am ready for the 5 problems.'));
+lessonBox.append(videoLabel);
+panel.append(lessonBox);
 var correctCount=0;
 arr.forEach(function(q,k){
  var div=document.createElement('div');div.className='quizbox';div.style.margin='12px 0';
@@ -157,7 +190,7 @@ if(idx===0&&correctCount===5){
  section.querySelector('button').onclick=function(){section.querySelector('p:last-child').textContent=Number(section.querySelector('input').value)===700?'✅ Correct: 500 + 200 ≈ 700.':'Round 497 to 500 and 201 to 200, then add.';};panel.append(section);
 }
 }
-window.CloudberryFlow={item:item,itemForDate:itemForDate,mount:mount,mathSteps:mathSteps,bjuSteps:bjuSteps,tgSteps:tgSteps,renderMath:renderMath,currentIndex:currentIndex};
+window.CloudberryFlow={item:item,itemForDate:itemForDate,mount:mount,mathSteps:mathSteps,mathVideos:mathVideos,bjuSteps:bjuSteps,tgSteps:tgSteps,renderMath:renderMath,currentIndex:currentIndex};
 document.addEventListener('DOMContentLoaded',renderMath);
 window.addEventListener('cloudberry:remote-update',function(){renderMath();});
 })();
