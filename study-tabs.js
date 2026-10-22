@@ -7,8 +7,8 @@ $('science-fair').append($('scienceFairLab'));
 const legacy=window.cloudberryScienceLab.get();
 if(!api.exportState().scienceFair){api.exportState().scienceFair={...legacy,dueDate:legacy.dates?.[7]||''};persist()}
 window.cloudberrySaveScience=data=>{api.exportState().scienceFair={...api.exportState().scienceFair,...data};persist()};
-const daily=document.createElement('section');daily.id='scienceDailyTasks';daily.className='section card';$('dailyLessonPlan').append(daily);
-const mathPlan=document.createElement('p');mathPlan.id='mathPlanLink';$('dailyLessonPlan').append(mathPlan);
+const daily=document.createElement('section');daily.id='scienceDailyTasks'; // Science tasks live in the Science Fair tab, not Today.
+const mathPlan=document.createElement('p');mathPlan.id='mathPlanLink'; // No obsolete Chapter 2 link on Today.
 const parent=document.createElement('section');parent.className='section card';parent.id='parentStudyWork';$('mom').append(parent);
 const due=$('sfDueDate');due.addEventListener('change',()=>{if(due.value&&!P.parse(due.value))return;const sf=api.exportState().scienceFair;sf.dueDate=due.value;persist()});
 function renderScience(){
@@ -24,6 +24,7 @@ function renderScience(){
 }
 let renderedKey='',saveTimer;
 function renderMath(force=false){
+ return; // Superseded by current Chapter 3 common-multiples work in Math tab.
  const state=api.exportState(),day=P.iso(),lesson=state.mathLesson??0,key=day+':'+lesson;
  mathPlan.replaceChildren();const link=document.createElement('button');link.className='soft';link.textContent=`🔢 Daily math practice · Chapter 2 · Lesson ${lesson+1}: ${P.lessons[lesson]} →`;link.onclick=()=>document.querySelector('[data-view="math"]').click();mathPlan.append(link);
  if(!force&&renderedKey===key)return;renderedKey=key;
