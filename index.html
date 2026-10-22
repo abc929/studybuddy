@@ -36,7 +36,23 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 
 </style><style>
 .prayer-card{background:linear-gradient(125deg,#fff0b5,#ffe1ef 65%,#f1e7ff);border:2px solid #f6cbdc;border-radius:23px;padding:22px;margin:0 0 20px;box-shadow:0 8px 20px #9b568018}.prayer-card h2{margin:4px 0;color:#8e3474}.prayer-card .prayer-text{font-size:1.07rem;line-height:1.75;background:#ffffffb5;border-radius:14px;padding:15px}.gratitude-ideas{display:flex;flex-wrap:wrap;gap:7px;margin:12px 0}.gratitude-idea{border:1px solid #e9bdd4;background:#fff;border-radius:99px;padding:8px 11px;color:#75375c;font-size:.9rem}.gratitude-card textarea{width:100%;min-height:75px;border:1px solid #e9bdd4;border-radius:12px;padding:10px;background:#fff}.gratitude-card .tiny{margin-top:7px}@media print{.prayer-card button,.prayer-card textarea{display:none}}
-</style><script src="study-planner.js"></script></head>
+</style><script src="study-planner.js"></script><style>
+/* Today's assignments only: legacy add-on sections are never shown. */
+#today #scienceDailyTasks,#today #mathPlanLink,#today #planVocab {display:none!important}
+</style>
+<script>
+document.addEventListener('DOMContentLoaded',()=>{
+ const clean=()=>{
+ const today=document.getElementById('today'),plan=document.getElementById('dailyLessonPlan');
+ if(!today||!plan)return;
+ for(const el of [...plan.querySelectorAll('div,section,p')]){
+  if(el.id==='lessonPlanToday'||el.contains(document.getElementById('lessonPlanToday')))continue;
+  if(el.id==='scienceDailyTasks'||el.id==='mathPlanLink'||el.querySelector(':scope > h3')?.textContent?.includes('Reading guide:'))el.remove();
+ }
+ };
+ clean();
+});
+</script></head>
 <body><div class="wrap">
 <header class="top"><div class="brand"><span class="berry">🫐</span><span>Cloudberry Study Buddy</span></div><span class="saved" id="saveState">Saved on this device</span></header>
 <section class="cloud-panel" aria-label="Private progress sync"><div class="row"><div><b>🔒 Private progress sync</b> <span class="cloud-account" id="cloudAccount"></span></div><div class="cloud-buttons"><button class="soft" id="cloudSignIn" type="button">Connect with Google</button><button class="soft" id="cloudSignOut" type="button" hidden>Sign out</button></div></div><p class="cloud-status" id="cloudStatus" aria-live="polite">Checking cloud setup…</p><p class="tiny muted">Gabriella signs in with her student Google account. Angela uses her separate parent Google account. Cloud access requires account-role setup.</p></section>
@@ -677,7 +693,7 @@ const tasks=day===0||day===6?[]:isCoop?[
 ['🙏 11:00 · Prayer and daily goals',''],
 ['🍽️ 11:15 · Breakfast',''],
 ['💊 AM Meds · check when taken',''],
-['📖 11:35 · The Good and the Beautiful Grade 5 · Lesson '+(13+Math.max(0,Math.floor((new Date(d.getFullYear(),d.getMonth(),d.getDate())-new Date(2026,9,22))/86400000)))+' · Writing Option 1 only','https://courses.goodandbeautiful.com/'],
+['📖 11:35 · The Good and the Beautiful Grade 5 · Lesson 13 · Writing Option 1 only','https://courses.goodandbeautiful.com/'],
 ['12:10 · '+bjuLine,''],
 ['🔬 12:35 · Miacademy Structures of Science · assigned lesson','https://miacademy.co/login?Flavor=Practice&isAssignmentMode=False'],
 ['🥗 1:15 · Lunch and break',''],
@@ -891,15 +907,9 @@ if(api){const state=api.exportState();state.bjuAnswers=state.bjuAnswers||{};stat
 result.textContent='✓ Answers submitted! Mom can review your answers. Cloud sync will send them to Mom’s View when connected.';result.style.color='#176b39';result.style.fontWeight='700'}catch(e){result.textContent='Could not save answers. Please check browser storage.'}});
  container.appendChild(form);
 }
-const plan=null; // Detailed reading guidance belongs on the BJU tab, not Today.
-if(plan&&assigned&&data){
- const duplicate=plan.querySelector('#planVocab');if(duplicate){const parent=duplicate.parentElement;parent.remove()}
- const card=document.createElement('div');card.style.cssText='margin:12px 0;padding:12px;border:1px solid #e9c68e;border-radius:12px;background:#fffaf1';
- card.innerHTML='<h3>📚 Reading guide: '+assigned[1]+'</h3><p><b>Today: pages '+assigned[2]+(readingEnd?'–'+readingEnd:' onward')+'</b></p><p><b>'+data.focus+'</b></p><p>'+data.definition+'</p><p>'+data.concept+'</p><h4>Vocabulary and meanings</h4>';
- wordList(card,data.words);plan.appendChild(card);
-}
+// Reading guidance intentionally lives only in the BJU Reading tab.
 })();
-</script><script src="study-tabs.js"></script><script>
+</script><script src="study-tabs.js?v=20261022-clean2"></script><script>
 (function(){
  const mom=document.getElementById('mom');if(!mom)return;
  const card=document.createElement('section');card.className='section card';
