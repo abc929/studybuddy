@@ -355,7 +355,7 @@ document.getElementById('gradeSpeech').onclick=()=>{if(!build())return;const che
  }
 })();
 </script>
-</main><footer class="footer">A calm homeschool helper for Cloudberry Academy · You can learn at your own pace.</footer></div><div class="toast" id="toast"></div>
+</main><footer class="footer">A calm homeschool helper for Cloudberry Academy · You can learn at your own pace. · Version 2026.10.22-R3</footer></div><div class="toast" id="toast"></div>
 <script>
 (()=>{'use strict';
 const KEY='cloudberry-companion-v2';const subjects=[['Math','🔢','Singapore Dimensions Math 4A · Chapter 3, Lesson 1 · Multiples'],['Reading','📚','BJU Reading 5 · 20 minutes'],['Writing','✍️','The Good and the Beautiful Grade 5'],['Science','🔬','Miacademy · Structures of Science'],['Social studies','🌎','Miacademy · U.S. geography and communities'],['Life skills & PE','🌿','Movement, practical skills, and creative choice']];
@@ -577,7 +577,7 @@ const bju={
 '2026-10-16':['Listening to Crickets',44,'Biography',['adequately','aviation','basked','clamored','complemented','hallowed','posthumously','prose','rambled','ruckus','touted']],
 '2026-10-19':['Grandmother Spider Steals the Sun',58,'Reader’s theater',['animated','brilliant','fashion','intense','lectern','simulate']]
 };
-const assigned=bju[iso]||([['2026-10-12','The Elephant · The Vulture · The Scorpion',24,'Poetry'],['2026-10-14','Chinchilla!',26,'Realistic fiction'],['2026-10-15','Listening to Crickets',36,'Biography'],['2026-10-16','Listening to Crickets',44,'Biography'],['2026-10-19','Grandmother Spider Steals the Sun',58,'Reader’s theater'],['2026-10-20','The Eagle',78,'Poetry'],['2026-10-21','Balaam’s Prophecies',80,'Bible account'],['2026-10-22','The Beginning of the Armadillos',90,'Fantasy'],['2026-10-23','Nanabozho Makes the Earth',102,'Myth'],['2026-10-26','The Wonderful Flight to the Mushroom Planet',108,'Science fiction'],['2026-10-27','The Wind and the Sun',142,'Fable'],['2026-10-28','Feathers',144,'Folktale'],['2026-10-29','The Bridge',156,'Poetry'],['2026-10-30','From Vanity Fair to Doubting Castle',158,'Allegory']].find(x=>x[0]===iso)||null);
+const assigned=bju[iso]||([['2026-10-12','The Elephant · The Vulture · The Scorpion',24,'Poetry'],['2026-10-14','Chinchilla!',26,'Realistic fiction'],['2026-10-15','Listening to Crickets',36,'Biography'],['2026-10-16','Listening to Crickets',44,'Biography'],['2026-10-19','Grandmother Spider Steals the Sun',58,'Reader’s theater'],['2026-10-20','The Eagle',78,'Poetry'],['2026-10-21','Balaam’s Prophecies',80,'Bible account'],['2026-10-22','The Beginning of the Armadillos',90,'Fantasy'],['2026-10-23','Nanabozho Makes the Earth',102,'Myth'],['2026-10-26','The Wonderful Flight to the Mushroom Planet',108,'Science fiction'],['2026-10-27','The Wind and the Sun',142,'Fable'],['2026-10-28','Feathers',144,'Folktale'],['2026-10-29','The Bridge',156,'Poetry'],['2026-10-30','From Vanity Fair to Doubting Castle',158,'Allegory']].find(x=>x[0]===iso)?.slice(1)||null);
 const bjuLine=assigned?'📚 BJU Reading 5 · '+assigned[0]+' · page '+assigned[1]+' · '+assigned[2] : '📚 BJU Reading 5 · No new assigned selection today; review previous reading';
 const tasks=day===0||day===6?[]:isCoop?[
 ['🙏 Prayer and gratitude',''],
@@ -606,8 +606,8 @@ if(iso==='2026-10-20'||iso==='2026-10-27'){tasks.push(['🎨 5:00–6:00 PM · S
 if(iso==='2026-11-03'){tasks.push(['🚌 EFH field trip · time to be confirmed',''])}
 const todayExtras=extras.filter(x=>x.date===iso).sort((a,b)=>a.time.localeCompare(b.time));
 todayExtras.forEach(x=>tasks.push([(x.time?x.time+' · ':'')+x.title,x.url||'']));
-if(tasks.length && !isCoop){const at=tasks.findIndex(x=>x[0].includes('2:00 ·'));tasks.splice(at<0?tasks.length:at+1,0,['🧠 Math practice · use vertical workspace and worked examples',''])}
-else if(tasks.length){tasks.push(['🧠 Math practice · review and solve one vertical problem',''])}
+// Math assignment already links to chapter 3 practice in the Math tab.
+
 box.replaceChildren();
 const heading=document.createElement('p');heading.innerHTML='<b>'+new Intl.DateTimeFormat('en-US',{weekday:'long',month:'long',day:'numeric'}).format(d)+'</b> · Check off each activity when finished';box.appendChild(heading);
 const key='cloudberry-plan-done:'+iso;
