@@ -17,13 +17,13 @@ var mathSteps = [
  ['4A Ch 4, Lesson 6','Textbook lesson 6','Follow the textbook and demonstrate understanding'],
  ['4A Ch 4, Lesson 7','Textbook lesson 7','Follow the textbook and demonstrate understanding'],
  ['4A Ch 4, Practice','Multiplication and estimation','Review, correct mistakes, ask for help if needed'],
- ['4A Ch 4, Review 1','Mixed review','No new lesson until approved'],
- ['4A Ch 4, Review 2','Mixed review','No new lesson until approved'],
- ['4A Ch 4, Review 3','Mixed review','No new lesson until approved'],
- ['4A Ch 4, Review 4','Mixed review','No new lesson until approved'],
- ['4A Ch 4, Review 5','Mixed review','No new lesson until approved'],
- ['4A Ch 4, Review 6','Mixed review','No new lesson until approved'],
- ['4A Ch 4, Review 7','Mixed review','No new lesson until approved']
+ ['4A Ch 5, Lesson 1','Chapter 5 · Lesson 1','Topic and video pending chapter-title photos'],
+ ['4A Ch 5, Lesson 2','Chapter 5 · Lesson 2','Topic and video pending chapter-title photos'],
+ ['4A Ch 5, Lesson 3','Chapter 5 · Lesson 3','Topic and video pending chapter-title photos'],
+ ['4A Ch 5, Lesson 4 · Practice','Chapter 5 practice','70% or higher required to proceed; parent-supplied questions'],
+ ['4A Ch 5, Lesson 5','Chapter 5 · Lesson 5','Topic and video pending chapter-title photos'],
+ ['4A Ch 5, Lesson 6','Chapter 5 · Lesson 6','Topic and video pending chapter-title photos'],
+ ['4A Ch 5, Lesson 7 · Practice','Chapter 5 Lesson 7 + practice','Practice assessment; 70% or higher required to proceed']
 ];
 /* Short, directly linked topic lessons. One or two videos per unlocked Math lesson. */
 var mathVideos = [
@@ -37,13 +37,14 @@ var mathVideos = [
  [['Math Antics • Multi-Digit Multiplication, Part 2','https://www.youtube.com/watch?v=RVYwunbpMHA']],
  [['Math Antics • Multi-Digit Multiplication, Part 2','https://www.youtube.com/watch?v=RVYwunbpMHA']],
  [['Math Antics • Rounding','https://www.youtube.com/watch?v=fd-E18EqSVk'],['Math Antics • Multi-Digit Multiplication, Part 2','https://www.youtube.com/watch?v=RVYwunbpMHA']],
- [['Math Antics • Multi-Digit Multiplication, Part 1','https://www.youtube.com/watch?v=FJ5qLWP3Fqo']],
- [['Math Antics • Multi-Digit Multiplication, Part 2','https://www.youtube.com/watch?v=RVYwunbpMHA']],
- [['Math Antics • Rounding','https://www.youtube.com/watch?v=fd-E18EqSVk']],
- [['Math Antics • Multi-Digit Multiplication, Part 1','https://www.youtube.com/watch?v=FJ5qLWP3Fqo']],
- [['Math Antics • Multi-Digit Multiplication, Part 2','https://www.youtube.com/watch?v=RVYwunbpMHA']],
- [['Math Antics • Rounding','https://www.youtube.com/watch?v=fd-E18EqSVk']],
- [['Math Antics • Multi-Digit Multiplication, Part 2','https://www.youtube.com/watch?v=RVYwunbpMHA']]
+ [],
+ [],
+ [],
+ [],
+ [],
+ [],
+ []
+
 ];
 var bjuSteps = [
  ['The Beginning of the Armadillos',90,'Fantasy'],
@@ -77,13 +78,73 @@ var qs = {
   8:[['314 × 2',628,'Use vertical multiplication.'],['128 × 4',512,'Multiply ones and regroup.'],['609 × 3',1827,'Remember the zero in the tens.'],['245 × 2',490,'Double 245.'],['306 × 5',1530,'Multiply by each place.']],
   9:[['Estimate 52 × 3 as 50 × 3',150,'Round 52 to 50.'],['83 × 2',166,'Double 83.'],['Estimate 197 × 4 as 200 × 4',800,'Round 197 to 200.'],['36 × 7',252,'Break apart 30 and 6.'],['124 × 3',372,'Multiply by place value.']]
 };
+
+/* Official textbook-based practice problems will be added when Mom provides photos/questions.
+ * Format: [question, correct answer, optional hint]. Do not fill with guessed textbook content.
+ * Chapter 4 practice: steps 6 and 10. Chapter 5: Lesson 4 practice and Lesson 7 practice.
+ */
+var practiceBanks = {5:[],9:[],13:[],16:[]};
+var PRACTICE_MINIMUM=70;
+function isPractice(idx){return Object.prototype.hasOwnProperty.call(practiceBanks,idx);}
+function practiceBankId(idx){return (practiceBanks[idx]||[]).map(function(q){return String(q[0]);}).join('|');}
+function practiceGrade(idx){var d=data(),r=(d.practiceGrades||{})[idx];return r||null;}
+function practicePassed(idx){
+ var bank=practiceBanks[idx],r=practiceGrade(idx);
+ return !!(bank&&bank.length&&r&&r.setId===practiceBankId(idx)&&r.questionCount===bank.length&&r.bestPercent>=PRACTICE_MINIMUM);
+}
+function saveGrade(idx,answers){
+ var bank=practiceBanks[idx]||[];
+ if(!bank.length||answers.length!==bank.length) return null;
+ var norm=function(x){return String(x).trim().toLowerCase().replace(/,/g,'').replace(/\s+/g,' ');};
+ var correct=bank.filter(function(q,i){return norm(answers[i])===norm(q[1]);}).length;
+ var pct=Math.round(correct*100/bank.length);
+ var flow=clone(data()),past=(flow.practiceGrades||{})[idx]||{};
+ var bankId=practiceBankId(idx),best=(past.setId===bankId)?Math.max(past.bestPercent||0,pct):pct;
+ flow.practiceGrades=flow.practiceGrades||{};
+ flow.practiceGrades[idx]={lastPercent:pct,bestPercent:best,correct:correct,questionCount:bank.length,setId:bankId,at:new Date().toISOString(),answers:answers.slice(),status:best>=PRACTICE_MINIMUM?'Passed':'Needs more practice'};
+ localStorage.setItem(KEY,JSON.stringify(flow));
+ var api=window.cloudberryStateApi;if(api){var st=api.exportState();st.subjectFlow=flow;api.importState(st);window.dispatchEvent(new CustomEvent('cloudberry:save',{detail:clone(api.exportState())}));}
+ return flow.practiceGrades[idx];
+}
+function practiceView(panel,idx){
+ var bank=practiceBanks[idx]||[],grade=practiceGrade(idx),status=document.createElement('section');
+ status.className='quizbox';status.style.margin='16px 0';
+ var h=document.createElement('h3');h.textContent='📝 Graded practice · 70% required';status.append(h);
+ var p=document.createElement('p');p.textContent='Gabriella completes the questions here in Study Buddy. She must score at least 70% AND check Math finished in Today to advance on the next school day.';status.append(p);
+ if(!bank.length){
+   var wait=document.createElement('p');wait.className='notice';
+   wait.textContent='⏳ Practice problems are awaiting Mom’s photos/questions. This checkpoint is locked until the official questions are added; it will not use invented textbook questions.';
+   status.append(wait);
+ }else{
+   if(grade&&grade.setId===practiceBankId(idx)){
+     var prior=document.createElement('p');prior.className='notice';
+     prior.textContent='Latest grade: '+grade.lastPercent+'% · Best: '+grade.bestPercent+'% · '+(practicePassed(idx)?'✅ Passed. Check Math finished on Today to advance.':'Keep practicing and retry until you reach 70%.');
+     status.append(prior);
+   }
+   var form=document.createElement('form'),inputs=[];
+   bank.forEach(function(q,n){
+     var block=document.createElement('div');block.className='logrow';block.style.margin='10px 0';
+     var label=document.createElement('label');label.textContent=(n+1)+'. '+q[0];label.style.cssText='display:block;font-weight:700';
+     var entry=document.createElement('input');entry.className='textinput';entry.required=true;entry.autocomplete='off';entry.setAttribute('aria-label','Answer practice question '+(n+1));
+     inputs.push(entry);block.append(label,entry);form.append(block);
+   });
+   var submit=document.createElement('button');submit.type='submit';submit.className='primary';submit.textContent='Grade my practice';
+   var feedback=document.createElement('p');feedback.setAttribute('role','status');form.append(submit,feedback);
+   form.onsubmit=function(e){e.preventDefault();var answers=inputs.map(function(x){return x.value.trim();});if(answers.some(function(a){return !a;})){feedback.textContent='Answer every question before grading.';return;}
+     var g=saveGrade(idx,answers);
+     feedback.textContent='Score: '+g.lastPercent+'% ('+g.correct+'/'+g.questionCount+'). '+(g.bestPercent>=70?'✅ You passed! Check Math finished on Today; the next lesson opens on the next school day.':'You need at least 70%. Review your steps and try again.');
+   };
+   status.append(form);
+ }
+ panel.append(status);
+}
 function iso(d){d=d||new Date();return [d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-');}
 function isSchool(d){return d.getDay()!==0&&d.getDay()!==6;}
 function clone(obj){return JSON.parse(JSON.stringify(obj));}
 function data(){var api=window.cloudberryStateApi;var state=api&&api.exportState();var stored={};try{stored=JSON.parse(localStorage.getItem(KEY)||'{}')||{};}catch(e){}
 return state&&state.subjectFlow&&typeof state.subjectFlow==='object'?state.subjectFlow:stored;}
 function doneMap(){var d=data();return d.done||{math:{},tg:{},bju:{}};}
-function currentIndex(subject,date){var marks=doneMap()[subject]||{};var i=0;while(i<17&&marks[i]&&marks[i]<date)i++;return Math.min(i,16);}
+function currentIndex(subject,date){var marks=doneMap()[subject]||{};var i=0;while(i<17&&marks[i]&&marks[i]<date&&(!isPractice(i)||practicePassed(i)))i++;return Math.min(i,16);}
 function item(subject,date){date=date||iso();var idx=currentIndex(subject,date);if(subject==='math')return {idx:idx,title:'Singapore Dimensions Math 4A · '+mathSteps[idx][0]+': '+mathSteps[idx][1],topic:mathSteps[idx][1],notes:mathSteps[idx][2]};if(subject==='tg')return {idx:idx,title:'The Good and the Beautiful Grade 5 · Lesson '+(13+idx)+' · Writing Option 1',url:'https://courses.goodandbeautiful.com/'};
 var b=bjuSteps[idx];return {idx:idx,title:'BJU Reading 5 · '+b[0]+' · p. '+b[1],story:b[0],page:b[1],genre:b[2],assigned:[''+date,b[0],b[1],b[2]]};}
 function checked(subject,date){var x=item(subject,date),marks=doneMap()[subject]||{};return marks[x.idx]===date;}
@@ -91,9 +152,11 @@ function saveCheck(subject,date,isDone){
 var api=window.cloudberryStateApi,st=api&&api.exportState(),flow=clone(data());flow.done=flow.done||{};
 flow.done[subject]=flow.done[subject]||{};
 var idx=item(subject,date).idx;
+if(isDone&&subject==='math'&&isPractice(idx)&&!practicePassed(idx))return false;
 if(isDone)flow.done[subject][idx]=date;else if(flow.done[subject][idx]===date)delete flow.done[subject][idx];
 localStorage.setItem(KEY,JSON.stringify(flow));
 if(st&&api){st.subjectFlow=flow;api.importState(st);window.dispatchEvent(new CustomEvent('cloudberry:save',{detail:clone(api.exportState())}));}
+return true;
 }
 function itemForDate(subject,date){return subject==='bju'?item('bju',date).assigned:item(subject,date);}
 function mount(box){
@@ -124,12 +187,12 @@ function render(){
  var c=document.createElement('input');c.type='checkbox';c.style.cssText='width:21px;height:21px;flex-shrink:0';
  var isSubject=id==='math'||id==='tg'||id==='bju';c.checked=isSubject?checked(id,date):!!routine[id];if(c.checked)completed++;
  var label=document.createElement('span');label.style.flex='1';label.style.overflowWrap='anywhere';
- var words=(line[2]?line[2]+' · ':'')+line[1]+' '+line[3];
+ var words=(line[2]?line[2]+' · ':'')+line[1]+' '+line[3]+(id==='math'&&isPractice(item('math',date).idx)?(practicePassed(item('math',date).idx)?' · ✅ Practice passed':' · 🔒 70% required'):'');
  if(line[4]){
   var a=document.createElement('a');a.textContent=words+' ↗';a.href=line[4].startsWith('#')?line[4]:line[4];if(line[4].startsWith('#')){a.onclick=function(e){e.preventDefault();document.querySelector('.tab[data-view="'+line[4].slice(1)+'"]')?.click();};}else{a.target='_blank';a.rel='noopener noreferrer';}label.append(a);
  }else label.textContent=words;
  c.onchange=function(){
-   if(isSubject)saveCheck(id,date,c.checked);
+   if(isSubject){var accepted=saveCheck(id,date,c.checked);if(accepted===false){c.checked=false;var reminder=document.getElementById('practiceGateMessage');if(!reminder){reminder=document.createElement('p');reminder.id='practiceGateMessage';reminder.className='notice';box.insertBefore(reminder,list);}reminder.textContent='Math practice is still locked. Complete the in-app assessment and earn at least 70% before checking this lesson finished.';return;}}
    else{routine[id]=c.checked;localStorage.setItem('cloudberry-routine-'+date,JSON.stringify(routine));var api=window.cloudberryStateApi;if(api){var st=api.exportState();st.dailyPlanRoutine=st.dailyPlanRoutine||{};st.dailyPlanRoutine[date]=clone(routine);api.importState(st);window.dispatchEvent(new CustomEvent('cloudberry:save',{detail:clone(api.exportState())}));}}
    render();
  };
@@ -151,7 +214,7 @@ var math=document.getElementById('math');if(!math)return;
 var oldText=math.querySelector('p');if(oldText&&/Chapter 2/.test(oldText.textContent))oldText.textContent='Singapore Dimensions Math 4A · lesson-by-lesson';
 var panel=document.getElementById('flowMathLesson');
 if(!panel){panel=document.createElement('section');panel.id='flowMathLesson';panel.className='section card';math.insertBefore(panel,math.firstChild);}
-var d=iso(),i=item('math',d),idx=i.idx,arr=qs[idx]||qs[9];
+var d=iso(),i=item('math',d),idx=i.idx,arr=isPractice(idx)?[]:(qs[idx]||[]);
 var attempts={};try{attempts=JSON.parse(localStorage.getItem('cloudberry-math-attempts-'+idx)||'{}')}catch(e){}
 panel.replaceChildren();
 var h=document.createElement('h2');h.textContent='🔢 '+i.title;panel.append(h);
@@ -161,6 +224,7 @@ var lessonVideos=mathVideos[idx]||mathVideos[mathVideos.length-1];
 var lessonBox=document.createElement('section');lessonBox.className='quizbox';lessonBox.style.cssText='margin:16px 0;background:#f2f4ff;border:1px solid #d9daf8';
 var videoHeading=document.createElement('h3');videoHeading.textContent='🎬 Watch before practicing • '+i.topic;lessonBox.append(videoHeading);
 var guidance=document.createElement('p');guidance.className='tiny muted';guidance.textContent='Start with the first video. When two videos are listed, watch both for this combined lesson. These are supplemental skill videos, not official Singapore textbook videos.';lessonBox.append(guidance);
+if(!lessonVideos.length){var pendingVideo=document.createElement('p');pendingVideo.className='notice';pendingVideo.textContent='Chapter 5 video pending: Mom will provide chapter and lesson title photos so the correct topic video can be matched. No unrelated video will be assigned.';lessonBox.append(pendingVideo);}
 lessonVideos.forEach(function(v,n){var link=document.createElement('a');link.className='soft';link.style.cssText='display:block;margin:8px 0;padding:11px 14px;text-decoration:none';link.href=v[1];link.target='_blank';link.rel='noopener noreferrer';link.textContent='▶ Video '+(n+1)+': '+v[0]+' ↗';lessonBox.append(link);});
 var videoLabel=document.createElement('label');videoLabel.style.cssText='display:flex;align-items:center;gap:9px;margin:12px 0 0';
 var watched=document.createElement('input');watched.type='checkbox';watched.style.cssText='width:20px;height:20px;accent-color:#56856e';
@@ -170,6 +234,8 @@ watched.onchange=function(){localStorage.setItem(watchedKey,watched.checked?'yes
 videoLabel.append(watched,document.createTextNode('I watched the video lesson and am ready for the 5 problems.'));
 lessonBox.append(videoLabel);
 panel.append(lessonBox);
+if(isPractice(idx)){practiceView(panel,idx);return;}
+if(!arr.length){var pending=document.createElement('p');pending.className='notice';pending.textContent='The Chapter 5 topic and practice questions will be filled in after Mom sends the textbook photos. The lesson stays here until completed.';panel.append(pending);return;}
 var correctCount=0;
 arr.forEach(function(q,k){
  var div=document.createElement('div');div.className='quizbox';div.style.margin='12px 0';
@@ -190,7 +256,7 @@ if(idx===0&&correctCount===5){
  section.querySelector('button').onclick=function(){section.querySelector('p:last-child').textContent=Number(section.querySelector('input').value)===700?'✅ Correct: 500 + 200 ≈ 700.':'Round 497 to 500 and 201 to 200, then add.';};panel.append(section);
 }
 }
-window.CloudberryFlow={item:item,itemForDate:itemForDate,mount:mount,mathSteps:mathSteps,mathVideos:mathVideos,bjuSteps:bjuSteps,tgSteps:tgSteps,renderMath:renderMath,currentIndex:currentIndex};
+window.CloudberryFlow={item:item,itemForDate:itemForDate,mount:mount,mathSteps:mathSteps,mathVideos:mathVideos,bjuSteps:bjuSteps,tgSteps:tgSteps,renderMath:renderMath,currentIndex:currentIndex,practiceBanks:practiceBanks,isPractice:isPractice,practicePassed:practicePassed,saveGrade:saveGrade,saveCheck:saveCheck,mathVideoList:mathVideos};
 document.addEventListener('DOMContentLoaded',renderMath);
 window.addEventListener('cloudberry:remote-update',function(){renderMath();});
 })();
