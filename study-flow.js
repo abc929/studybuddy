@@ -256,6 +256,24 @@ if(idx===0&&correctCount===5){
  section.querySelector('button').onclick=function(){section.querySelector('p:last-child').textContent=Number(section.querySelector('input').value)===700?'✅ Correct: 500 + 200 ≈ 700.':'Round 497 to 500 and 201 to 200, then add.';};panel.append(section);
 }
 }
+
+function showPracticeGrades(){
+var mom=document.getElementById('mom');if(!mom)return;
+var host=document.getElementById('flowPracticeGrades');
+if(!host){host=document.createElement('section');host.id='flowPracticeGrades';host.className='section card';mom.prepend(host);}
+host.replaceChildren();
+var h=document.createElement('h2');h.textContent='📝 Math practice checkpoints • 70% to pass';host.append(h);
+var sub=document.createElement('p');sub.className='muted tiny';sub.textContent='Official question sets come from Mom. The student must earn at least 70% and check Today complete before advancing.';host.append(sub);
+[[5,'Step 6 • Chapter 4 Practice'],[9,'Step 10 • Chapter 4 Practice'],[13,'Step 14 • Chapter 5 Lesson 4 Practice'],[16,'Step 17 • Chapter 5 Lesson 7 Practice']].forEach(function(x){
+ var r=document.createElement('div');r.className='logrow';r.style.margin='8px 0';
+ var grade=practiceGrade(x[0]),title=document.createElement('b');title.textContent=x[1];r.append(title);
+ var info=document.createElement('p');info.className='tiny muted';info.textContent=!practiceBanks[x[0]].length?'Awaiting problem photos — locked':grade&&grade.setId===practiceBankId(x[0])?('Last: '+grade.lastPercent+'% • Best: '+grade.bestPercent+'% • '+(practicePassed(x[0])?'PASSED':'Not yet passed')):'No grade yet — locked';
+ r.append(info);host.append(r);
+});
+}
+document.addEventListener('DOMContentLoaded',showPracticeGrades);
+window.addEventListener('cloudberry:save',showPracticeGrades);
+window.addEventListener('cloudberry:remote-update',showPracticeGrades);
 window.CloudberryFlow={item:item,itemForDate:itemForDate,mount:mount,mathSteps:mathSteps,mathVideos:mathVideos,bjuSteps:bjuSteps,tgSteps:tgSteps,renderMath:renderMath,currentIndex:currentIndex,practiceBanks:practiceBanks,isPractice:isPractice,practicePassed:practicePassed,saveGrade:saveGrade,saveCheck:saveCheck,mathVideoList:mathVideos};
 document.addEventListener('DOMContentLoaded',renderMath);
 window.addEventListener('cloudberry:remote-update',function(){renderMath();});
