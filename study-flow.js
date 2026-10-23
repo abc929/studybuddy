@@ -208,6 +208,17 @@ function refresh(){if(active)return;active=true;try{render();}finally{active=fal
 window.addEventListener('cloudberry:remote-update',refresh);
 document.addEventListener('visibilitychange',function(){if(!document.hidden)refresh()});
 }
+function persistMathRecord(idx,attempts,event){
+ const api=window.cloudberryStateApi;
+ if(!api)return;
+ const st=api.exportState(),existing=st.mathPracticeAttempts?.[idx]||{};
+ const history=(existing.history||[]).slice(-100);
+ if(event)history.push(event);
+ st.mathPracticeAttempts=st.mathPracticeAttempts||{};
+ st.mathPracticeAttempts[idx]={latest:JSON.parse(JSON.stringify(attempts)),history};
+ api.importState(st);
+ window.dispatchEvent(new CustomEvent('cloudberry:save',{detail:JSON.parse(JSON.stringify(api.exportState()))}));
+}
 function renderMath(){
 var math=document.getElementById('math');if(!math)return;
 ['mathAnticsFeatured','chapter2Estimation','dailyMath','commonMultiplesLesson'].forEach(function(id){var old=document.getElementById(id);if(old)old.remove();});
@@ -216,6 +227,8 @@ var panel=document.getElementById('flowMathLesson');
 if(!panel){panel=document.createElement('section');panel.id='flowMathLesson';panel.className='section card';math.insertBefore(panel,math.firstChild);}
 var d=iso(),i=item('math',d),idx=i.idx,arr=isPractice(idx)?[]:(qs[idx]||[]);
 var attempts={};try{attempts=JSON.parse(localStorage.getItem('cloudberry-math-attempts-'+idx)||'{}')}catch(e){}
+// The cloud record is authoritative when a student signs in on another device.
+attempts={...attempts,...(window.cloudberryStateApi?.exportState()?.mathPracticeAttempts?.[idx]?.latest||{})};
 panel.replaceChildren();
 var h=document.createElement('h2');h.textContent='🔢 '+i.title;panel.append(h);
 var p=document.createElement('p');p.textContent='Follow the Singapore textbook examples. '+i.notes+'. Work through FIVE independent questions below. Checking your Math lesson in Today is the only way to unlock the next lesson.';panel.append(p);
@@ -230,7 +243,14 @@ var videoLabel=document.createElement('label');videoLabel.style.cssText='display
 var watched=document.createElement('input');watched.type='checkbox';watched.style.cssText='width:20px;height:20px;accent-color:#56856e';
 var watchedKey='cloudberry-math-videos-watched-'+idx;
 watched.checked=localStorage.getItem(watchedKey)==='yes';
-watched.onchange=function(){localStorage.setItem(watchedKey,watched.checked?'yes':'no');};
+watched.onchange=function(){
+ localStorage.setItem(watchedKey,watched.checked?'yes':'no');
+ const api=window.cloudberryStateApi;
+ if(api){var st=api.exportState();st.mathVideosWatched=st.mathVideosWatched||{};
+ if(watched.checked)st.mathVideosWatched[idx]={at:new Date().toISOString(),lesson:i.title};
+ else delete st.mathVideosWatched[idx];
+ api.importState(st);window.dispatchEvent(new CustomEvent('cloudberry:save',{detail:JSON.parse(JSON.stringify(api.exportState()))}));}
+};
 videoLabel.append(watched,document.createTextNode('I watched the video lesson and am ready for the 5 problems.'));
 lessonBox.append(videoLabel);
 panel.append(lessonBox);
@@ -245,9 +265,21 @@ arr.forEach(function(q,k){
  if(attempts[k]?.correct){correctCount++;status.textContent='✅ Correct!';}
  else if(attempts[k])status.textContent='Not quite. Use the hint and try again.';
  var check=document.createElement('button');check.type='button';check.className='soft';check.textContent='Check answer';
- check.onclick=function(){var v=input.value.trim().toLowerCase().replace(/,/g,'');var answer=String(q[1]).toLowerCase();attempts[k]={value:input.value,correct:v===answer};localStorage.setItem('cloudberry-math-attempts-'+idx,JSON.stringify(attempts));renderMath();};
+ check.onclick=function(){
+ var v=input.value.trim().toLowerCase().replace(/,/g,''),answer=String(q[1]).toLowerCase();
+ var wasHinted=!!attempts[k]?.hintUsed;
+ attempts[k]={value:input.value,correct:v===answer,hintUsed:wasHinted};
+ localStorage.setItem('cloudberry-math-attempts-'+idx,JSON.stringify(attempts));
+ persistMathRecord(idx,attempts,{at:new Date().toISOString(),date:iso(),question:q[0],studentAnswer:input.value,correctAnswer:String(q[1]),correct:v===answer,hintUsed:wasHinted});
+ renderMath();
+};
  var hint=document.createElement('button');hint.type='button';hint.className='soft';hint.style.marginLeft='8px';hint.textContent='Hint';
- hint.onclick=function(){status.textContent='💡 '+q[2];};
+ hint.onclick=function(){
+ status.textContent='💡 '+q[2];
+ attempts[k]={...(attempts[k]||{}),hintUsed:true};
+ localStorage.setItem('cloudberry-math-attempts-'+idx,JSON.stringify(attempts));
+ persistMathRecord(idx,attempts,null);
+};
  div.append(input,check,hint,status);panel.append(div);
 });
 var footer=document.createElement('p');footer.className='notice';footer.textContent=correctCount+'/5 correct. '+(correctCount===5?'Great! Complete the short review below when shown, then check Math finished in Today.':'Keep practicing; five attempts help us assess understanding.');panel.append(footer);
