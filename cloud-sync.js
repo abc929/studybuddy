@@ -218,6 +218,7 @@ if (!configured) {
       currentUid = user?.uid || null;
       signedInRole = null;
       document.documentElement.dataset.cloudRole = 'signed-out';
+      document.documentElement.dataset.parentDataReady = 'no';
       setSignedIn(user);
       setParentAccess(false);
       if (!user) {
@@ -235,18 +236,20 @@ if (!configured) {
         signedInRole = role;
         document.documentElement.dataset.cloudRole = role;
         setParentAccess(role === 'parent');
-        if (role === 'parent') window.dispatchEvent(new Event('cloudberry:parent-connected'));
+        // Await authenticated cloud read before showing dated student work.
         const ref = dbSdk.doc(db, 'classrooms', 'cloudberry', 'students', 'gabriella');
         if (role === 'parent') {
           const parentSnap = await dbSdk.getDoc(ref);
-          if (parentSnap.exists() && window.cloudberryStateApi?.importState) {
-            window.cloudberryStateApi.importState(parentSnap.data()?.state || {});
+          if (window.cloudberryStateApi?.importState) {
+            window.cloudberryStateApi.importState(parentSnap.exists() ? (parentSnap.data()?.state || {}) : {});
           }
+          document.documentElement.dataset.parentDataReady = 'yes';
           window.dispatchEvent(new Event('cloudberry:parent-connected'));
           stopListening = dbSdk.onSnapshot(ref, snap => {
-            if (snap.exists() && window.cloudberryStateApi?.importState) {
-              window.cloudberryStateApi.importState(snap.data()?.state || {});
+            if (window.cloudberryStateApi?.importState) {
+              window.cloudberryStateApi.importState(snap.exists() ? (snap.data()?.state || {}) : {});
             }
+            document.documentElement.dataset.parentDataReady = 'yes';
             window.dispatchEvent(new Event('cloudberry:parent-connected'));
             status('Parent view connected · read-only progress');
           }, error => { console.error(error); status('Could not load parent view. Check account permissions and Firestore rules.'); });
