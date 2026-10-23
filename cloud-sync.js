@@ -30,6 +30,8 @@ function setParentAccess(enabled) {
   // Cloud write permissions remain controlled separately by Firebase rules.
   document.querySelectorAll('.tab').forEach(tab => { tab.hidden = false; });
   document.querySelectorAll('.view').forEach(view => { view.hidden = false; });
+  if (parentTab) parentTab.hidden = !enabled;
+  if (parentView) parentView.hidden = !enabled;
   if (enabled) {
     document.querySelectorAll('.view').forEach(view => view.classList.toggle('active', view.id === 'mom'));
     document.querySelectorAll('.tab').forEach(tab => tab.classList.toggle('active', tab === parentTab));
@@ -215,6 +217,7 @@ if (!configured) {
       stopListening = null;
       currentUid = user?.uid || null;
       signedInRole = null;
+      document.documentElement.dataset.cloudRole = 'signed-out';
       setSignedIn(user);
       setParentAccess(false);
       if (!user) {
@@ -230,17 +233,21 @@ if (!configured) {
           return;
         }
         signedInRole = role;
+        document.documentElement.dataset.cloudRole = role;
         setParentAccess(role === 'parent');
+        if (role === 'parent') window.dispatchEvent(new Event('cloudberry:parent-connected'));
         const ref = dbSdk.doc(db, 'classrooms', 'cloudberry', 'students', 'gabriella');
         if (role === 'parent') {
           const parentSnap = await dbSdk.getDoc(ref);
           if (parentSnap.exists() && window.cloudberryStateApi?.importState) {
             window.cloudberryStateApi.importState(parentSnap.data()?.state || {});
           }
+          window.dispatchEvent(new Event('cloudberry:parent-connected'));
           stopListening = dbSdk.onSnapshot(ref, snap => {
             if (snap.exists() && window.cloudberryStateApi?.importState) {
               window.cloudberryStateApi.importState(snap.data()?.state || {});
             }
+            window.dispatchEvent(new Event('cloudberry:parent-connected'));
             status('Parent view connected · read-only progress');
           }, error => { console.error(error); status('Could not load parent view. Check account permissions and Firestore rules.'); });
           return;
