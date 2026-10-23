@@ -125,6 +125,9 @@ function render(){
  if(document.documentElement.dataset.cloudRole!=='parent'){
   const status=el('p','Sign in with your parent Google account to view Gabriella’s synced work. This report does not use the parent device’s local study data.','notice');panel.append(status);return;
  }
+ if(document.documentElement.dataset.parentDataReady!=='yes'){
+  panel.append(el('p','Connecting to Gabriella’s cloud schoolwork… This journal will appear after your parent account receives the student record.','notice'));return;
+ }
  const state=window.cloudberryStateApi?.exportState?.()||{},items=buildRecords(state);
  const gr=items.filter(x=>x.category==='💗 Gratitude');
  const overview=el('div');overview.style.cssText='display:flex;gap:12px;flex-wrap:wrap;margin:12px 0';
