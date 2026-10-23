@@ -256,13 +256,13 @@ if (!configured) {
         if (!firstRead.exists()) {
           const local = window.cloudberryStateApi?.exportState?.();
           if (!local) throw new Error('Study progress is not ready.');
-          await dbSdk.setDoc(ref, { state: local, updatedAt: dbSdk.serverTimestamp() });
+          await dbSdk.setDoc(ref, { state: mergeStudentData({}, local), updatedAt: dbSdk.serverTimestamp() });
         } else {
           const remote = firstRead.data()?.state;
           const local = window.cloudberryStateApi?.exportState?.();
           if (!hasActivity(remote) && hasActivity(local)) {
             // A blank caregiver-device setup must not erase existing study-device progress.
-            await dbSdk.setDoc(ref, { state: local, updatedAt: dbSdk.serverTimestamp() });
+            await dbSdk.setDoc(ref, { state: mergeStudentData({}, local), updatedAt: dbSdk.serverTimestamp() });
           } else if (remote && window.cloudberryStateApi?.importState) {
             const merged = mergeStudentData(remote, local);
             window.cloudberryStateApi.importState(merged);
