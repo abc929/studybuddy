@@ -86,6 +86,15 @@ if (!configured) {
       Object.values(state.tasks || {}).some(Boolean) ||
       Number(state.stars) > 0 ||
       Object.keys(state.mathDaily || {}).length ||
+      Object.keys(state.gratitude || {}).length ||
+      Object.keys(state.gratitudeHistory || {}).length ||
+      Object.keys(state.subjectFlow?.done?.math || {}).length ||
+      Object.keys(state.subjectFlow?.done?.tg || {}).length ||
+      Object.keys(state.subjectFlow?.done?.bju || {}).length ||
+      Object.keys(state.bjuAnswers || {}).length ||
+      (state.chapterAssessments || []).length ||
+      (state.readingLog || []).length ||
+      (state.libraryBooks || []).length ||
       Object.keys(state.scienceFair?.answers || {}).length ||
       (state.scienceFair?.trials || []).some(value => value !== '') ||
       state.scienceFair?.dueDate
@@ -227,7 +236,8 @@ if (!configured) {
     });
 
     window.addEventListener('cloudberry:save', (event) => {
-      if (!currentUid || !event.detail || !parentTab?.hidden) return;
+      // Only the signed-in STUDENT can write the Gabriella document. Tab visibility is not an authorization signal.
+      if (!currentUid || signedInRole !== 'student' || !event.detail) return;
       const uid = currentUid;
       const ref = dbSdk.doc(db, 'classrooms', 'cloudberry', 'students', 'gabriella');
       const snapshot = JSON.parse(JSON.stringify(event.detail));
