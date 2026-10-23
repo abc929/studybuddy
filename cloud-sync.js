@@ -100,6 +100,50 @@ if (!configured) {
       state.scienceFair?.dueDate
     ));
 
+
+    // Migrate gratitude and reading records that were previously only on a student device.
+    // Parent view must never merge the parent's local browser data into student work.
+    function mergeStudentData(remote, local) {
+      const combined = {...local, ...remote};
+      const old = {...(local?.gratitude || {})};
+      try {
+        for (let i=0; i<localStorage.length; i++) {
+          const key=localStorage.key(i);
+          if (!/^cloudberry-gratitude-\d{4}-\d{2}-\d{2}$/.test(key||'')) continue;
+          const date=key.slice('cloudberry-gratitude-'.length),value=(localStorage.getItem(key)||'').trim();
+          if (value && !old[date]) old[date]=value;
+        }
+      } catch (e) { console.warn('Local gratitude migration unavailable',e); }
+      combined.gratitude={...old,...(remote?.gratitude||{})};
+      combined.gratitudeHistory={...(local?.gratitudeHistory||{}),...(remote?.gratitudeHistory||{})};
+      for (const [day,entry] of Object.entries(local?.gratitudeHistory||{})) {
+        const cloud=remote?.gratitudeHistory?.[day];
+        if (!cloud || (entry?.savedAt && String(entry.savedAt)>String(cloud.savedAt||''))) {
+          combined.gratitudeHistory[day]=entry;
+          if (entry?.text) combined.gratitude[day]=entry.text;
+        }
+      }
+      for (const key of ['bjuAnswers','taskDates','dailyPlanChecks','dailyPlanRoutine']) {
+        combined[key]={...(local?.[key]||{}),...(remote?.[key]||{})};
+      }
+      combined.subjectFlow={...(local?.subjectFlow||{}),...(remote?.subjectFlow||{})};
+      combined.subjectFlow.done={};
+      for (const sub of ['math','tg','bju']) {
+        combined.subjectFlow.done[sub]={...(local?.subjectFlow?.done?.[sub]||{}),...(remote?.subjectFlow?.done?.[sub]||{})};
+      }
+      combined.subjectFlow.practiceGrades={...(local?.subjectFlow?.practiceGrades||{}),...(remote?.subjectFlow?.practiceGrades||{})};
+      for (const field of ['readingGrades','readingLog','libraryBooks','chapterAssessments']) {
+        const merged=new Map();
+        for (const item of [...(local?.[field]||[]),...(remote?.[field]||[])]) {
+          if (!item||typeof item!=='object')continue;
+          const key=item.id || [item.title||item.chapter,item.date||item.at||'',item.author||''].join('|');
+          merged.set(key,item);
+        }
+        combined[field]=[...merged.values()];
+      }
+      return combined;
+    }
+
     signInButton?.addEventListener('click', async () => {
       try {
         status('Checking Firebase Authentication…');
@@ -213,7 +257,13 @@ if (!configured) {
             // A blank caregiver-device setup must not erase existing study-device progress.
             await dbSdk.setDoc(ref, { state: local, updatedAt: dbSdk.serverTimestamp() });
           } else if (remote && window.cloudberryStateApi?.importState) {
-            window.cloudberryStateApi.importState(remote);
+            const merged = mergeStudentData(remote, local);
+            window.cloudberryStateApi.importState(merged);
+            if (JSON.stringify(merged) !== JSON.stringify(remote)) {
+              writeChain=writeChain.then(()=>dbSdk.setDoc(ref,{
+                state:merged,updatedAt:dbSdk.serverTimestamp()
+              })).catch(error=>{console.error(error);status('Older schoolwork is still on this device but could not upload yet.');});
+            }
           }
         }
         if (currentUid !== user.uid) return;
