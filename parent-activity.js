@@ -54,6 +54,16 @@ function buildRecords(s){
   if(!grade||!grade.at)continue;
   add(grade.at,'📐 Math grade','Practice '+(Number(step)+1)+' · '+grade.lastPercent+'%',grade.correct+'/'+grade.questionCount+' correct · best '+grade.bestPercent+'% · '+(grade.status||''),grade.answers?.length?[['Student answers',grade.answers.join(', ')]]:[]);
  }
+ for(const [step,watched] of Object.entries(s.mathVideosWatched||{})){
+  if(watched?.at)add(watched.at,'🎬 Math video','Video lesson watched',watched.lesson||'Math step '+(Number(step)+1));
+ }
+ for(const [title,draft] of Object.entries(s.bjuDrafts||{})){
+  if(!draft?.updatedAt||s.bjuAnswers?.[title]?.submittedAt)continue;
+  const answers=Object.entries(draft.answers||{}).filter(([,v])=>String(v).trim());
+  if(!answers.length)continue;
+  const detail=answers.map(([n,v])=>['Question '+(Number(n)+1)+': '+(draft.questions?.[Number(n)]||''),v]);
+  add(draft.updatedAt,'✏️ BJU draft','In-progress reading: '+title,answers.length+' written answer(s), not submitted yet',detail);
+ }
  for(const [step,session] of Object.entries(s.mathPracticeAttempts||{})){
   if(!session)continue;
   for(const rec of session.history||[]){
