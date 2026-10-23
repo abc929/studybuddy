@@ -278,7 +278,22 @@ render();entry.value=localStorage.getItem(base)||'';
 const ideasBox=document.getElementById('gratitudeIdeas');ideas.forEach(t=>{let b=document.createElement('button');b.type='button';b.className='gratitude-idea';b.textContent=t;b.onclick=()=>{entry.value+=(entry.value.trim()?', ':'')+t;entry.focus()};ideasBox.appendChild(b)});
 document.getElementById('prayerNext').onclick=()=>{idx=(idx+1)%prayers.length;render()};
 document.getElementById('prayerRead').onclick=()=>{if(!('speechSynthesis'in window)){status.textContent='Use your device read-aloud feature.';return}window.speechSynthesis.cancel();const utterance=new SpeechSynthesisUtterance(prayer.textContent);utterance.rate=.9;utterance.pitch=1;window.speechSynthesis.speak(utterance)};
-document.getElementById('gratitudeSave').onclick=()=>{localStorage.setItem(base,entry.value.trim());status.textContent='Saved for today 💗';const api=window.cloudberryStateApi;if(api){let d=api.exportState();d.gratitude=d.gratitude||{};d.gratitude[dayKey]=entry.value.trim();api.importState(d);window.dispatchEvent(new CustomEvent('cloudberry:save',{detail:JSON.parse(JSON.stringify(d))}))}};
+document.getElementById('gratitudeSave').onclick=()=>{
+ const key=new Date().toLocaleDateString('en-CA'),text=entry.value.trim();
+ if(!text){status.textContent='Write or choose something you are thankful for, then save it.';return;}
+ localStorage.setItem('cloudberry-gratitude-'+key,text);
+ status.textContent='Saved on this device 💗 · syncing to Mom’s View when signed in';
+ const api=window.cloudberryStateApi;
+ if(api){
+   const d=api.exportState();
+   d.gratitude=d.gratitude||{};
+   d.gratitudeHistory=d.gratitudeHistory||{};
+   d.gratitude[key]=text;
+   d.gratitudeHistory[key]={text,prayer:prayer.textContent,savedAt:new Date().toISOString()};
+   api.importState(d);
+   window.dispatchEvent(new CustomEvent('cloudberry:save',{detail:JSON.parse(JSON.stringify(api.exportState()))}));
+ }
+};
 })();
 </script><section class="section card" id="civicsDeepDive"><h2>🏛️ Government: Who Does What?</h2><p>Learn who serves, how they get the job, how long they serve, and how each branch checks the others. Read each lesson before the quiz.</p><label for="branchSelect"><b>Choose a branch</b></label><select class="select" id="branchSelect"><option value="leg">🏛️ Legislative — Congress</option><option value="exec">🇺🇸 Executive — President and agencies</option><option value="jud">⚖️ Judicial — Federal courts</option></select><div id="branchReading" class="quizbox"></div><div id="branchQuiz" class="quizbox"></div></section><script>
 (function(){
