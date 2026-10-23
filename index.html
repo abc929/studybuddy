@@ -695,6 +695,17 @@ if(!assigned){
 function addWrittenAnswers(container,title,questions){
  const key='cloudberry:bju:answers:'+title;
  let saved={};try{saved=JSON.parse(localStorage.getItem(key)||'{}')||{}}catch(e){}
+ const cloudDraft=window.cloudberryStateApi?.exportState()?.bjuDrafts?.[title];
+ if(cloudDraft?.answers)saved={...saved,...cloudDraft.answers};
+ let draftTimer=null;
+ function saveBjuDraft(){
+  const api=window.cloudberryStateApi;if(!api)return;
+  const state=api.exportState();
+  state.bjuDrafts=state.bjuDrafts||{};
+  state.bjuDrafts[title]={questions:[...questions],answers:{...saved},updatedAt:new Date().toISOString()};
+  api.importState(state);
+  window.dispatchEvent(new CustomEvent('cloudberry:save',{detail:JSON.parse(JSON.stringify(api.exportState()))}));
+ }
  const form=document.createElement('form');form.noValidate=true;
  const messages=[];
  questions.forEach((question,i)=>{
@@ -743,13 +754,13 @@ function addWrittenAnswers(container,title,questions){
    else if(v)makePanel('🎉 Ready to submit',['Your basic writing checks look good. Make sure your answer matches the story.'],'#f3eaff','#c8a5ee','#59377a');
    return !issues.length;
   }
-  field.addEventListener('input',()=>{saved[i]=field.value;try{localStorage.setItem(key,JSON.stringify(saved))}catch(e){};evaluate()});
+  field.addEventListener('input',()=>{saved[i]=field.value;try{localStorage.setItem(key,JSON.stringify(saved))}catch(e){};evaluate();clearTimeout(draftTimer);draftTimer=setTimeout(saveBjuDraft,1400)});
   check.addEventListener('click',evaluate);if(field.value.trim())evaluate();
   group.append(label,field,check,feedback);form.appendChild(group);messages.push({evaluate,feedback});
  });
  const submit=document.createElement('button');submit.type='submit';submit.className='soft';submit.textContent='📨 Submit my answers';
  const result=document.createElement('p');result.setAttribute('aria-live','polite');form.append(submit,result);
- form.addEventListener('submit',e=>{e.preventDefault();messages.forEach(m=>m.evaluate());try{localStorage.setItem(key+':submitted',new Date().toISOString());localStorage.setItem(key,JSON.stringify(saved));const api=window.cloudberryStateApi;
+ form.addEventListener('submit',e=>{e.preventDefault();messages.forEach(m=>m.evaluate());clearTimeout(draftTimer);try{localStorage.setItem(key+':submitted',new Date().toISOString());localStorage.setItem(key,JSON.stringify(saved));const api=window.cloudberryStateApi;
 if(api){const state=api.exportState();state.bjuAnswers=state.bjuAnswers||{};state.bjuAnswers[title]={submittedAt:new Date().toISOString(),questions:[...questions],answers:questions.map((_,i)=>String(saved[i]||'').trim())};api.importState(state);window.dispatchEvent(new CustomEvent('cloudberry:save',{detail:JSON.parse(JSON.stringify(state))}));}
 result.textContent='✓ Answers submitted! Mom can review your answers. Cloud sync will send them to Mom’s View when connected.';result.style.color='#176b39';result.style.fontWeight='700'}catch(e){result.textContent='Could not save answers. Please check browser storage.'}});
  container.appendChild(form);
