@@ -125,7 +125,7 @@ if (!configured) {
           if (entry?.text) combined.gratitude[day]=entry.text;
         }
       }
-      for (const key of ['bjuAnswers','taskDates','dailyPlanChecks','dailyPlanRoutine']) {
+      for (const key of ['bjuAnswers','bjuDrafts','mathPracticeAttempts','mathVideosWatched','taskDates','dailyPlanChecks','dailyPlanRoutine']) {
         combined[key]={...(local?.[key]||{}),...(remote?.[key]||{})};
       }
       combined.subjectFlow={...(local?.subjectFlow||{}),...(remote?.subjectFlow||{})};
