@@ -689,8 +689,43 @@ if(!assigned){
  const title=document.createElement('h3');title.textContent='🔊 Vocabulary: tap to hear and learn';story.appendChild(title);
  wordList(story,data.words);
  const after=document.createElement('div');after.innerHTML='<h3>After-reading questions</h3>';
- const ol=document.createElement('ol');data.questions.forEach(q=>{const li=document.createElement('li');li.textContent=q;ol.appendChild(li)});after.appendChild(ol);story.appendChild(after);after.style.display=lastPart?'':'none';if(lastPart)addWrittenAnswers(after,assigned[1],data.questions);
+ const ol=document.createElement('ol');data.questions.forEach(q=>{const li=document.createElement('li');li.textContent=q;ol.appendChild(li)});after.appendChild(ol);story.appendChild(after);after.style.display=lastPart?'':'none';if(lastPart)addBjuMultipleChoice(after,assigned[1],data.questions);
  }else{const p=document.createElement('p');p.textContent='Before-reading guidance and vocabulary for this selection are not yet available.';story.appendChild(p)}
+}
+function addBjuMultipleChoice(container,title,questions){
+ const banks={
+ 'The Beginning of the Armadillos':[
+ ['Which explanation best describes why the young animals escape danger?',['They rely on strength alone.','They combine different skills and confuse their pursuer.','Their mother defeats the predator for them.','They hide until the predator leaves.'],1,'Their different abilities and the confusion they create are central to the outcome.'],
+ ['What is the strongest inference about the predator’s difficulty?',['The predator cannot see the animals.','The predator is unwilling to hunt.','The predator relies too much on simple rules for identifying prey.','The predator already knows the ending.'],2,'The predator struggles when the animals no longer fit the categories it was taught.'],
+ ['How does the animals’ decision to teach each other affect the plot?',['It helps them adapt and changes their appearance and abilities.','It makes them forget how to survive.','It convinces the predator to become friendly.','It causes them to leave their home forever.'],0,'Learning from one another is the cause of their unusual transformation.'],
+ ['Which detail most clearly makes this a fantasy or origin tale?',['Animals live near a river.','A predator searches for food.','Animals learn skills from one another.','The story imaginatively explains how a new kind of animal came to exist.'],3,'The invented explanation for an animal’s origin goes beyond realistic fiction.'],
+ ['Which theme is best supported by the animals’ actions?',['Following every rule is always safest.','Cooperation and adaptability can overcome a stronger opponent.','Strength matters more than thinking.','A problem disappears when ignored.'],1,'Their teamwork and flexibility help them survive a dangerous situation.']
+ ]};
+ const bank=banks[title];
+ if(!bank){const p=document.createElement('p');p.textContent='Multiple-choice questions for this selection are being prepared. Written responses remain available for this story.';container.appendChild(p);addWrittenAnswers(container,title,questions);return;}
+ const old=container.querySelector('ol');if(old)old.remove();
+ const key='cloudberry:bju:mc:'+title;let saved={};try{saved=JSON.parse(localStorage.getItem(key)||'{}')||{}}catch(e){}
+ const form=document.createElement('div');form.setAttribute('aria-label','BJU multiple choice reading quiz');
+ const status=document.createElement('p');status.setAttribute('aria-live','polite');
+ function persist(){
+  localStorage.setItem(key,JSON.stringify(saved));
+  const api=window.cloudberryStateApi;
+  if(api){const state=api.exportState();state.bjuMultipleChoice=state.bjuMultipleChoice||{};state.bjuMultipleChoice[title]={answers:saved,questions:bank.map(x=>({question:x[0],choices:x[1],correct:x[2]})),updatedAt:new Date().toISOString()};api.importState(state);window.dispatchEvent(new CustomEvent('cloudberry:save',{detail:JSON.parse(JSON.stringify(api.exportState()))}));}
+  const done=bank.filter((_,i)=>saved[i]?.checked).length,correct=bank.filter((q,i)=>saved[i]?.first===q[2]).length;
+  status.textContent=done+' of 5 checked · '+correct+' correct on first try'+(done===5?' · '+(correct>=4?'Mastery achieved!':'Review and try again for mastery.'):'');
+ }
+ bank.forEach((q,i)=>{
+  const field=document.createElement('fieldset');field.style.cssText='margin:16px 0;padding:14px;border:1px solid #e8cde0;border-radius:12px';
+  const legend=document.createElement('legend');legend.textContent=(i+1)+'. '+q[0];legend.style.fontWeight='700';field.appendChild(legend);
+  const feedback=document.createElement('p');feedback.setAttribute('aria-live','polite');
+  const radios=[];
+  q[1].forEach((choice,j)=>{const label=document.createElement('label');label.style.cssText='display:flex;gap:10px;align-items:flex-start;padding:8px;cursor:pointer';const radio=document.createElement('input');radio.type='radio';radio.name='bju-mc-'+i;radio.value=j;radio.checked=saved[i]?.selected===j;radios.push(radio);label.append(radio,document.createTextNode('ABCD'[j]+'. '+choice));field.appendChild(label)});
+  const check=document.createElement('button');check.type='button';check.className='soft';check.textContent='Check answer';
+  check.addEventListener('click',()=>{const j=radios.findIndex(r=>r.checked);if(j<0){feedback.textContent='Choose an answer first.';return}const prev=saved[i]||{};saved[i]={selected:j,first:prev.first===undefined?j:prev.first,checked:true,attempts:(prev.attempts||0)+1};feedback.textContent=(j===q[2]?'✓ Correct! ':'✗ Not quite. Try again. ')+(j===q[2]?q[3]:'Hint: think about the story’s events and what caused them.');persist()});
+  if(saved[i]?.checked)feedback.textContent=saved[i].selected===q[2]?'✓ Correct! '+q[3]:'✗ Not quite. Try again.';
+  field.append(check,feedback);form.appendChild(field);
+ });
+ container.append(form,status);persist();
 }
 function addWrittenAnswers(container,title,questions){
  const key='cloudberry:bju:answers:'+title;
