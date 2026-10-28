@@ -148,9 +148,9 @@ if (!configured) {
 
     signInButton?.addEventListener('click', async () => {
       try {
-        status('Checking Firebase Authentication…');
-        if (!await checkAuthConfiguration()) return;
-        status('Firebase key check passed · opening Google sign-in');
+        // Start the popup immediately from the trusted tap/click. Safari may block
+        // it if we await a network check before calling signInWithPopup.
+        // Do not change Firebase data, auth persistence, or role permissions here.
         status('Opening Google sign-in… If a new window appears, complete sign-in there.');
         try {
           await authSdk.signInWithPopup(auth, provider);
