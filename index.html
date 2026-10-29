@@ -815,14 +815,14 @@ result.textContent='✓ Answers submitted! Mom can review your answers. Cloud sy
   fromState.forEach(r=>{if(!records[r.title]||new Date(r.at)>new Date(records[r.title].at))records[r.title]=r});
   const state=window.cloudberryStateApi?.exportState()||{};
   const log=Array.isArray(state.readingLog)?state.readingLog:[];
-  const bjuLog=log.filter(r=>r.source==='BJU Reading 5');
+  const bjuLog=log.filter(r=>r.source==='BJU Reading 5'||r.source==='Independent reading');
   const logHeader=document.createElement('div');
   logHeader.innerHTML='<h3>Homeschool reading log</h3><p class="muted tiny">Dated reading evidence for the spring portfolio review. Reading completion does not imply a comprehension grade.</p>';
   box.replaceChildren();box.appendChild(logHeader);
   bjuLog.sort((a,b)=>String(b.date).localeCompare(String(a.date))).forEach(r=>{
     const entry=document.createElement('div');entry.className='logrow';
     const heading=document.createElement('b');heading.textContent=r.date+' · '+r.title;
-    const info=document.createElement('p');info.className='tiny muted';info.textContent=r.type+' · '+r.status+' · '+r.assessment;
+    const info=document.createElement('p');info.className='tiny muted';info.textContent=[r.type,r.author,r.chapters,r.status,r.assessment].filter(Boolean).join(' · ');
     entry.append(heading,info);box.appendChild(entry);
   });
   const rows=Object.values(records).sort((a,b)=>new Date(b.at)-new Date(a.at));
@@ -990,4 +990,4 @@ result.textContent='✓ Answers submitted! Mom can review your answers. Cloud sy
  const selected=nav.querySelector('.tab.active')?.dataset.view||'today';
  openTab(selected==='holiday-tab'?'literature-tab':selected);
 })();
-</script><script src="./parent-activity.js?v=20261023-parent-diary-v3"></script></body></html>
+</script><script src="./parent-activity.js?v=20261023-parent-diary-v3"></script><script src="./independent-reading.js?v=20261029"></script></body></html>

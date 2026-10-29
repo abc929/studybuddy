@@ -46,3 +46,9 @@ Open `index.html` from a local web server (for example, GitHub Pages or another 
 ## Checks
 
 With a current Node.js runtime, run `node --test tests/planner.test.cjs` for date boundaries, backward scheduling and generated answer checks. Browser regression checks use Playwright and installed Microsoft Edge: install Playwright as a development tool, then run `node tests/browser.cjs`. Set `PLAYWRIGHT_MODULE` to an absolute Playwright package path if using a bundled runtime. Browser checks use synthetic local progress and block Firebase imports; they never change real student records.
+
+## Independent reading
+
+Gabriella can record a date, title, author and chapters in BJU Reading → My daily independent reading. Saving grants independent reading credit for that date, without recording book completion, a grade, or BJU completion. Repeat saves for the same date/title/author update the entry. Entries use the existing Firebase-synced readingLog and appear in Mom’s homeschool log and daily journal. Parent accounts cannot submit entries. Missing historical author/chapter details are not invented; no October 27–28 backfill is included.
+
+Run node tests/independent-reading.cjs for browser checks with synthetic records and Firebase imports blocked (PLAYWRIGHT_MODULE can select the bundled Playwright). Live authenticated cross-device sync requires a student and parent session.

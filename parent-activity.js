@@ -91,7 +91,7 @@ function buildRecords(s){
  }
  for(const r of s.readingLog||[]){
   if(!r?.date)continue;
-  add(r.date,'📕 Reading log',r.title||'Reading',[(r.type||''),(r.status||''),(r.assessment||'')].filter(Boolean).join(' · '));
+  add(r.date,'📕 Reading log',r.title||'Reading',[(r.type||''),(r.author||''),(r.chapters||''),(r.status||''),(r.assessment||'')].filter(Boolean).join(' · '));
  }
  for(const r of s.libraryBooks||[]){
   if(!r?.date)continue;
