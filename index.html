@@ -558,7 +558,7 @@ render();loadSnapshot();
    if(todayTab)todayTab.textContent='🏠 Today';
  }
 })();
-</script><script type="module" src="./cloud-sync.js?v=20261028-ipad-login-v1"></script><script>
+</script><script type="module" src="./cloud-sync.js?v=20261104-visibility-v2"></script><script>
 (function(){
 const date=document.getElementById('cloudberryTodayDate'),event=document.getElementById('cloudberryTodayOccasion');
 function nth(y,m,w,n){return 1+(w-new Date(y,m,1).getDay()+7)%7+7*(n-1)}
@@ -1003,6 +1003,52 @@ result.textContent='✓ Answers submitted! Mom can review your answers. Cloud sy
  document.querySelectorAll('.goldenPhrase').forEach(b=>b.addEventListener('click',()=>{korean.value=b.dataset.korean;try{localStorage.setItem('cloudberry-golden-korean',korean.value)}catch(e){};status.textContent='Phrase loaded. Tap Hear it slowly, then repeat.';document.getElementById('goldenKorean').scrollIntoView({behavior:'smooth',block:'start'});}));
  document.getElementById('goldenKoreanSlow').addEventListener('click',()=>speak(.7));
  document.getElementById('goldenKoreanNormal').addEventListener('click',()=>speak(1));
+})();
+</script>
+<script>
+/* View visibility recovery: navigation must not depend on a previous active/hidden state.
+   This only changes the display of existing panels; it never writes student data. */
+(function(){
+  const nav=document.querySelector('nav.tabs');
+  if(!nav)return;
+  function show(id){
+    const view=document.getElementById(id);
+    if(!view||!view.classList.contains('view'))return;
+    if(id==='mom' && document.documentElement.dataset.cloudRole!=='parent')return;
+    nav.querySelectorAll('.tab').forEach(tab=>{
+      const selected=tab.dataset.view===id;
+      tab.classList.toggle('active',selected);
+      if(selected)tab.hidden=false;
+    });
+    document.querySelectorAll('main .view').forEach(panel=>{
+      const selected=panel===view;
+      panel.classList.toggle('active',selected);
+      panel.hidden=!selected;
+      panel.style.display=selected?'block':'none';
+    });
+    if(id==='mom'&&document.documentElement.dataset.parentDataReady==='yes')
+      window.dispatchEvent(new Event('cloudberry:parent-connected'));
+  }
+  nav.addEventListener('click',event=>{
+    const tab=event.target.closest('.tab');
+    if(!tab||tab.hidden)return;
+    queueMicrotask(()=>show(tab.dataset.view));
+  });
+  window.addEventListener('cloudberry:parent-connected',()=>{
+    const active=nav.querySelector('.tab.active');
+    if(active)queueMicrotask(()=>show(active.dataset.view));
+  });
+  // Restore a visible panel after asynchronous authentication changes.
+  const observer=new MutationObserver(()=>{
+    const active=nav.querySelector('.tab.active');
+    if(!active)return;
+    const panel=document.getElementById(active.dataset.view);
+    if(panel && (panel.hidden || getComputedStyle(panel).display==='none'))
+      queueMicrotask(()=>show(active.dataset.view));
+  });
+  observer.observe(nav,{subtree:true,attributes:true,attributeFilter:['class','hidden']});
+  const initial=nav.querySelector('.tab.active')?.dataset.view||'today';
+  show(initial);
 })();
 </script>
 </body></html>
