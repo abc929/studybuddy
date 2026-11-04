@@ -43,26 +43,32 @@ setParentAccess(false);
 // Keep the parent dashboard and progress panel visible when navigating.
 // Older navigation handlers can leave a view's hidden flag set even while
 // its tab is selected. This changes presentation only, never student records.
-function restoreSelectedView() {
-  const selected = document.querySelector('.tabs .tab.active');
-  const id = selected?.dataset.view;
-  if (!id) return;
-  const view = document.getElementById(id);
-  if (!view || !view.classList.contains('view')) return;
+function showParentOrProgress(id) {
+  if (!['mom','progress'].includes(id)) return;
   if (id === 'mom' && document.documentElement.dataset.cloudRole !== 'parent') return;
+  const view = document.getElementById(id);
+  if (!view) return;
+  document.querySelectorAll('main > .view').forEach(panel => {
+    const selected = panel === view;
+    panel.classList.toggle('active', selected);
+    panel.hidden = !selected;
+  });
+  document.querySelectorAll('.tabs .tab').forEach(tab => {
+    tab.classList.toggle('active', tab.dataset.view === id);
+  });
   view.hidden = false;
   view.classList.add('active');
-  if (id === 'mom' || id === 'progress') {
-    for (const other of document.querySelectorAll('.view')) {
-      if (other !== view) other.classList.remove('active');
-    }
-    if (id === 'mom' && document.documentElement.dataset.parentDataReady === 'yes') {
-      window.dispatchEvent(new Event('cloudberry:parent-connected'));
-    }
-  }
+  if (id === 'mom' && document.documentElement.dataset.parentDataReady === 'yes')
+    window.dispatchEvent(new Event('cloudberry:parent-connected'));
 }
 document.querySelector('.tabs')?.addEventListener('click', event => {
-  if (event.target.closest('.tab')) queueMicrotask(restoreSelectedView);
+  const tab = event.target.closest('.tab');
+  if (!tab) return;
+  const id = tab.dataset.view;
+  if (id === 'mom' || id === 'progress') {
+    // Run after the existing study-tabs handler, which replaces the active view.
+    queueMicrotask(() => showParentOrProgress(id));
+  }
 });
 const configured = ['apiKey', 'authDomain', 'projectId', 'appId']
   .every((key) => typeof firebaseConfig[key] === 'string' && firebaseConfig[key].trim());
@@ -278,7 +284,7 @@ if (!configured) {
             document.documentElement.dataset.parentDataReady = 'yes';
             window.dispatchEvent(new Event('cloudberry:parent-connected'));
             status('Parent view connected · read-only progress');
-            restoreSelectedView();
+            showParentOrProgress('mom');
           }, error => { console.error(error); status('Could not load parent view. Check account permissions and Firestore rules.'); });
           return;
         }
