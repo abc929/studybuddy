@@ -39,6 +39,31 @@ function setParentAccess(enabled) {
   }
 }
 setParentAccess(false);
+
+// Keep the parent dashboard and progress panel visible when navigating.
+// Older navigation handlers can leave a view's hidden flag set even while
+// its tab is selected. This changes presentation only, never student records.
+function restoreSelectedView() {
+  const selected = document.querySelector('.tabs .tab.active');
+  const id = selected?.dataset.view;
+  if (!id) return;
+  const view = document.getElementById(id);
+  if (!view || !view.classList.contains('view')) return;
+  if (id === 'mom' && document.documentElement.dataset.cloudRole !== 'parent') return;
+  view.hidden = false;
+  view.classList.add('active');
+  if (id === 'mom' || id === 'progress') {
+    for (const other of document.querySelectorAll('.view')) {
+      if (other !== view) other.classList.remove('active');
+    }
+    if (id === 'mom' && document.documentElement.dataset.parentDataReady === 'yes') {
+      window.dispatchEvent(new Event('cloudberry:parent-connected'));
+    }
+  }
+}
+document.querySelector('.tabs')?.addEventListener('click', event => {
+  if (event.target.closest('.tab')) queueMicrotask(restoreSelectedView);
+});
 const configured = ['apiKey', 'authDomain', 'projectId', 'appId']
   .every((key) => typeof firebaseConfig[key] === 'string' && firebaseConfig[key].trim());
 
@@ -245,6 +270,7 @@ if (!configured) {
           }
           document.documentElement.dataset.parentDataReady = 'yes';
           window.dispatchEvent(new Event('cloudberry:parent-connected'));
+          restoreSelectedView();
           stopListening = dbSdk.onSnapshot(ref, snap => {
             if (window.cloudberryStateApi?.importState) {
               window.cloudberryStateApi.importState(snap.exists() ? (snap.data()?.state || {}) : {});
@@ -252,6 +278,7 @@ if (!configured) {
             document.documentElement.dataset.parentDataReady = 'yes';
             window.dispatchEvent(new Event('cloudberry:parent-connected'));
             status('Parent view connected · read-only progress');
+            restoreSelectedView();
           }, error => { console.error(error); status('Could not load parent view. Check account permissions and Firestore rules.'); });
           return;
         }
