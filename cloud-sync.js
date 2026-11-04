@@ -276,7 +276,7 @@ if (!configured) {
           }
           document.documentElement.dataset.parentDataReady = 'yes';
           window.dispatchEvent(new Event('cloudberry:parent-connected'));
-          restoreSelectedView();
+          showParentOrProgress('mom');
           stopListening = dbSdk.onSnapshot(ref, snap => {
             if (window.cloudberryStateApi?.importState) {
               window.cloudberryStateApi.importState(snap.exists() ? (snap.data()?.state || {}) : {});
@@ -324,7 +324,7 @@ if (!configured) {
         });
       } catch (error) {
         console.error(error);
-        status('Could not connect. Check Firebase setup and security rules; local saving still works.');
+        status('Cloud connection failed (' + (error.code || error.name || 'unknown') + '): ' + String(error.message || '').slice(0,160) + '. Local saving still works.');
       }
     });
 
