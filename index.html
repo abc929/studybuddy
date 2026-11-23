@@ -742,6 +742,14 @@ function addWrittenAnswers(container,title,questions){
  const cloudDraft=window.cloudberryStateApi?.exportState()?.bjuDrafts?.[title];
  if(cloudDraft?.answers)saved={...saved,...cloudDraft.answers};
  let draftTimer=null;
+ const priorSubmission=window.cloudberryStateApi?.exportState()?.bjuAnswers?.[title];
+ const submittedAt=priorSubmission?.submittedAt||localStorage.getItem(key+':submitted');
+ if(submittedAt){
+  const notice=document.createElement('div');notice.className='notice';notice.setAttribute('role','status');
+  notice.innerHTML='<strong>✅ Submitted!</strong><p>Your answers have been submitted. Mom can review them in Mom’s View.</p>';
+  container.replaceChildren(notice);return;
+ }
+
  function saveBjuDraft(){
   const api=window.cloudberryStateApi;if(!api)return;
   const state=api.exportState();
@@ -806,7 +814,7 @@ function addWrittenAnswers(container,title,questions){
  const result=document.createElement('p');result.setAttribute('aria-live','polite');form.append(submit,result);
  form.addEventListener('submit',e=>{e.preventDefault();messages.forEach(m=>m.evaluate());clearTimeout(draftTimer);try{localStorage.setItem(key+':submitted',new Date().toISOString());localStorage.setItem(key,JSON.stringify(saved));const api=window.cloudberryStateApi;
 if(api){const state=api.exportState();state.bjuAnswers=state.bjuAnswers||{};state.bjuAnswers[title]={submittedAt:new Date().toISOString(),questions:[...questions],answers:questions.map((_,i)=>String(saved[i]||'').trim())};api.importState(state);window.dispatchEvent(new CustomEvent('cloudberry:save',{detail:JSON.parse(JSON.stringify(state))}));}
-result.textContent='✓ Answers submitted! Mom can review your answers. Cloud sync will send them to Mom’s View when connected.';result.style.color='#176b39';result.style.fontWeight='700'}catch(e){result.textContent='Could not save answers. Please check browser storage.'}});
+const notice=document.createElement('div');notice.className='notice';notice.setAttribute('role','status');notice.innerHTML='<strong>✅ Submitted!</strong><p>Your answers have been submitted. Mom can review them in Mom’s View.</p>';container.replaceChildren(notice)}catch(e){result.textContent='Could not save answers. Please check browser storage.'}});
  container.appendChild(form);
 }
 // Reading guidance intentionally lives only in the BJU Reading tab.
