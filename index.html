@@ -63,7 +63,83 @@ document.addEventListener('DOMContentLoaded',()=>{
 <label for="c3l5_6b"><strong>6(b).</strong> Find the common factors of 10 and 20.</label><input class="textinput" id="c3l5_6b" placeholder="List all common factors">
 <label for="c3l5_6d"><strong>6(d).</strong> Find the common factors of 36 and 60.</label><input class="textinput" id="c3l5_6d" placeholder="List all common factors">
 <p><button type="submit" class="soft">Save my answers</button></p><p id="c3l5status" role="status" class="muted"></p></form></section>
-<script>(function(){const ids=['5b','6a','6b','6d'];const key='cloudberry-math-4a-ch3-lesson5-2026-11-23';const form=document.getElementById('c3l5form');if(!form)return;try{const old=JSON.parse(localStorage.getItem(key)||'{}');ids.forEach(k=>{document.getElementById('c3l5_'+k).value=old[k]||''})}catch(e){}form.addEventListener('submit',function(e){e.preventDefault();const answers={};ids.forEach(k=>answers[k]=document.getElementById('c3l5_'+k).value.trim());try{localStorage.setItem(key,JSON.stringify(answers));document.getElementById('c3l5status').textContent='Answers saved on this device. Show Mom for grading.'}catch(e){document.getElementById('c3l5status').textContent='Could not save on this device; please copy your answers.'}})})();</script><script>(function(){const ids=['1','2','3','4','6','common'],key='cloudberry-factor36-2026-11-23';try{const saved=JSON.parse(localStorage.getItem(key)||'{}');ids.forEach(k=>{const e=document.getElementById('factor36_'+k);if(e)e.value=saved[k]||''})}catch(e){}document.getElementById('factor36_save')?.addEventListener('click',()=>{const answers={};ids.forEach(k=>answers[k]=document.getElementById('factor36_'+k).value.trim());try{localStorage.setItem(key,JSON.stringify(answers));document.getElementById('factor36_status').textContent='Saved on this device.'}catch(e){document.getElementById('factor36_status').textContent='Unable to save on this device.'}})})();</script><section class="card" id="dailyMath"></section></section><section class="view" id="science-fair"></section>
+<script>
+(function(){
+ const lessonKey='cloudberry-math-4a-ch3-lesson5-2026-11-23';
+ const factorKey='cloudberry-factor36-2026-11-23';
+ const lessonIds=['5b','6a','6b','6d'],factorIds=['1','2','3','4','6','common'];
+ const lessonForm=document.getElementById('c3l5form');
+ const factorButton=document.getElementById('factor36_save');
+ const status=document.getElementById('c3l5status');
+ if(!lessonForm)return;
+ const read=(ids,prefix)=>Object.fromEntries(ids.map(k=>[k,(document.getElementById(prefix+k)?.value||'').trim()]));
+ const fill=(ids,prefix,data)=>ids.forEach(k=>{const el=document.getElementById(prefix+k);if(el&&data?.[k]!==undefined)el.value=data[k]});
+ const cloudRecord=()=>window.cloudberryStateApi?.exportState()?.dailyMathSubmissions?.[lessonKey];
+ const restore=()=>{
+   let localLesson={},localFactors={};
+   try{localLesson=JSON.parse(localStorage.getItem(lessonKey)||'{}')}catch(e){}
+   try{localFactors=JSON.parse(localStorage.getItem(factorKey)||'{}')}catch(e){}
+   const saved=cloudRecord();
+   fill(lessonIds,'c3l5_',saved?.answers||localLesson);
+   fill(factorIds,'factor36_',saved?.factors||localFactors);
+   if(saved?.submittedAt){status.textContent='✓ Submitted '+new Date(saved.submittedAt).toLocaleString()+' · Waiting for Mom to review.';lessonForm.querySelector('[type="submit"]').disabled=true;}
+ };
+ const saveLocal=()=>{
+   const answers=read(lessonIds,'c3l5_'),factors=read(factorIds,'factor36_');
+   try{localStorage.setItem(lessonKey,JSON.stringify(answers));localStorage.setItem(factorKey,JSON.stringify(factors))}catch(e){}
+   return {answers,factors};
+ };
+ factorButton?.addEventListener('click',()=>{saveLocal();document.getElementById('factor36_status').textContent='Practice saved. Use Submit Today’s Math Work when finished.'});
+ const submit=lessonForm.querySelector('[type="submit"]');
+ submit.textContent='Submit Today’s Math Work';
+ submit.className='primary';
+ lessonForm.addEventListener('submit',e=>{
+   e.preventDefault();
+   if(document.documentElement.dataset.cloudRole!=='student'){status.textContent='Sign into Gabriella’s student account to submit work.';return;}
+   const api=window.cloudberryStateApi;
+   if(!api?.exportState||!api?.importState){status.textContent='Progress is still loading. Try again shortly.';return;}
+   const work=saveLocal();
+   if(!Object.values(work.answers).some(Boolean)&&!Object.values(work.factors).some(Boolean)){status.textContent='Enter at least one answer before submitting.';return;}
+   const state=api.exportState();
+   state.dailyMathSubmissions=state.dailyMathSubmissions||{};
+   if(state.dailyMathSubmissions[lessonKey]?.submittedAt){status.textContent='This assignment was already submitted.';return;}
+   state.dailyMathSubmissions[lessonKey]={...work,lesson:'Singapore Dimensions 4A · Chapter 3 Lesson 5',date:'2026-11-23',submittedAt:new Date().toISOString(),status:'submitted'};
+   api.importState(state);
+   window.dispatchEvent(new CustomEvent('cloudberry:save',{detail:JSON.parse(JSON.stringify(state))}));
+   submit.disabled=true;
+   status.textContent='✓ Submitted! Your math work is saved to your progress record. Mom can review it.';
+ });
+ window.addEventListener('cloudberry:remote-update',restore);
+ window.addEventListener('cloudberry:parent-connected',restore);
+ restore();
+})();
+</script><script>
+(function(){
+ const host=document.getElementById('momContent');if(!host)return;
+ const panel=document.createElement('section');panel.className='section card';panel.id='momDailyMathSubmissions';
+ host.appendChild(panel);
+ const render=()=>{
+  const records=Object.values(window.cloudberryStateApi?.exportState()?.dailyMathSubmissions||{});
+  panel.replaceChildren();
+  const heading=document.createElement('h3');heading.textContent='Submitted Daily Math Work';panel.append(heading);
+  if(!records.length){const p=document.createElement('p');p.textContent='No daily math submissions yet.';panel.append(p);return;}
+  records.sort((a,b)=>String(b.submittedAt||'').localeCompare(String(a.submittedAt||''))).forEach(record=>{
+   const details=document.createElement('details');const summary=document.createElement('summary');
+   summary.textContent=(record.lesson||'Math assignment')+' · '+(record.submittedAt?new Date(record.submittedAt).toLocaleString():'Submitted')+' · '+(record.grade!==undefined?record.grade+'%':'Awaiting review');
+   details.append(summary);
+   for(const [label,answers] of [['Assigned questions',record.answers],['Factor practice',record.factors]]){
+    const h=document.createElement('h4');h.textContent=label;details.append(h);
+    Object.entries(answers||{}).forEach(([q,a])=>{const p=document.createElement('p');p.textContent=q+': '+(a||'Not answered');details.append(p)});
+   }
+   panel.append(details);
+  });
+ };
+ window.addEventListener('cloudberry:parent-connected',render);
+ window.addEventListener('cloudberry:remote-update',render);
+ window.addEventListener('cloudberry:save',render);
+ render();
+})();
+</script><section class="card" id="dailyMath"></section></section><section class="view" id="science-fair"></section>
 <section class="view active" id="today"><section class="prayer-card gratitude-card" id="morningPrayer"><div class="cloudberry-date" style="position:relative;overflow:hidden;margin-bottom:18px;padding:17px 14px;border-radius:22px;background:linear-gradient(120deg,#ffe47d 0%,#ffd0e7 48%,#d8c8ff 100%);border:3px solid #fff;box-shadow:0 5px 0 #d78fb5;color:#503058;text-align:center"><div style="font-size:1.55rem;letter-spacing:5px" aria-hidden="true">🌈 ⭐ 🌸 🦋 ✨</div><div style="font-size:.83rem;font-weight:850;letter-spacing:.08em;color:#91457a;margin:5px 0">💖 TODAY IS A GREAT DAY! 💖</div><strong id="cloudberryTodayDate" style="color:#503058;font-size:clamp(1.22rem,4vw,1.7rem);line-height:1.3;display:block;text-shadow:1px 1px #fff"></strong><div id="cloudberryTodayOccasion" style="color:#673b65;font-size:.98rem;margin:10px auto 2px;padding:8px 12px;background:#ffffffbd;border-radius:15px;font-weight:750;max-width:95%"></div></div><span class="eyebrow">☀️ Start your day with gratitude</span><h2>🙏 Good morning, Gabriella!</h2><p class="muted">A new day is a new chance to learn, be kind, and grow. You don't have to think of something big to be thankful for.</p><div class="prayer-text" id="dailyPrayer" aria-live="polite"></div><div class="practiceactions" style="margin-top:12px"><button type="button" class="soft" id="prayerRead">🔊 Read prayer aloud</button><button type="button" class="soft" id="prayerNext">🌷 Another prayer</button></div><h3 style="margin:18px 0 5px">💛 What can I thank God for today?</h3><p class="muted tiny">Tap an idea to add it to your gratitude journal, or write your own.</p><div class="gratitude-ideas" id="gratitudeIdeas"></div><label for="gratitudeEntry"><b>Today I'm thankful for…</b></label><textarea id="gratitudeEntry" placeholder="I'm thankful for…"></textarea><div class="practiceactions"><button type="button" class="primary" id="gratitudeSave">💖 Save my gratitude</button><span class="tiny muted" id="gratitudeStatus" role="status"></span></div><p class="tiny muted">Every answer counts. Even a warm blanket, a favorite song, or a small moment of peace. You can leave this blank on hard days.</p></section><div class="hero"><div class="hello"><div class="hero-heading"><div class="eyebrow">Your study space</div><svg class="hero-art" viewBox="0 0 160 140" aria-hidden="true" focusable="false"><circle cx="119" cy="43" r="25" fill="#FFD84D"/><path d="M119 8v-6M119 84v-6M84 43h-7M161 43h-7M94 18l-5-5M149 73l-5-5M144 18l5-5M89 73l5-5" stroke="#F2A900" stroke-width="4" stroke-linecap="round"/><path d="M37 78c-15-18-7-37 13-38 8-17 31-15 37 1 18 2 23 22 9 36-1 19-24 29-39 17-13 5-26-3-20-16Z" fill="#F285B5"/><path d="M48 41c-2-15 7-25 21-28 1 12-6 23-21 28Z" fill="#76A96A"/><path d="M65 38c1-13 10-20 23-18-2 11-11 19-23 18Z" fill="#98C979"/><circle cx="58" cy="68" r="3" fill="#51334F"/><circle cx="77" cy="68" r="3" fill="#51334F"/><path d="M60 78c4 6 12 6 16 0" fill="none" stroke="#51334F" stroke-width="3" stroke-linecap="round"/><path d="m27 39 3 7 7 2-7 3-3 7-3-7-7-3 7-2 3-7Z" fill="#FFD84D"/><path d="m103 95 2 5 6 2-6 2-2 6-2-6-6-2 6-2 2-5Z" fill="#F5A2C8"/></svg></div><h1>Hi, Gabriella!<br>Let’s learn one thing.</h1><p>Pick a subject, try a step, and ask for a hint whenever you need one. Your buddy adjusts practice as you learn.</p><button class="primary" data-goto="learn">Start a study session →</button></div><div class="card"><div class="row"><h2>Today’s little wins</h2><span class="pill" id="todayCount">0 of 5</span></div><p class="muted tiny">Check off what you finish. When connected, Mom can see your progress from her own account.</p><div class="tasks" id="taskList"></div><div class="row tiny muted"><span>Today’s progress</span><b id="taskText">0%</b></div><div class="bar"><span id="taskBar"></span></div><div class="row"><span>⭐ <b id="stars">0</b> study stars</span><span id="streak" class="tiny">🌱 Getting started</span></div></div></div>
 <div class="section"><div class="sectionhead"><h2>Pick a subject</h2><p>Choose what you’re working on</p></div><div class="subjects" id="subjectCards"></div></div>
 <div class="section grid2"><div class="card"><h2>Last time you practiced</h2><div id="lastSession" class="muted">Your first session is waiting for you.</div></div><div class="card"><h2>Need help?</h2><p class="muted">Tell your buddy what part feels tricky. It will give you a hint and help you find the next step.</p><button class="soft" data-goto="learn">Ask for a hint</button></div></div></section>
