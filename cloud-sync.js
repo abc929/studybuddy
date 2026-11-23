@@ -48,10 +48,12 @@ function showParentOrProgress(id) {
   if (id === 'mom' && document.documentElement.dataset.cloudRole !== 'parent') return;
   const view = document.getElementById(id);
   if (!view) return;
+  // Navigation is controlled by the active class. Do not set hidden on
+  // inactive panels: the app's other tab handlers only toggle that class,
+  // so hidden=true would leave every later-selected tab visually blank.
   document.querySelectorAll('main > .view').forEach(panel => {
-    const selected = panel === view;
-    panel.classList.toggle('active', selected);
-    panel.hidden = !selected;
+    panel.classList.toggle('active', panel === view);
+    if (panel !== parentView) panel.hidden = false;
   });
   document.querySelectorAll('.tabs .tab').forEach(tab => {
     tab.classList.toggle('active', tab.dataset.view === id);
