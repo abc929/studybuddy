@@ -32,6 +32,10 @@ function setParentAccess(enabled) {
   document.querySelectorAll('.view').forEach(view => { view.hidden = false; });
   if (parentTab) parentTab.hidden = !enabled;
   if (parentView) parentView.hidden = !enabled;
+  // Music is completed: retain its content for the parent's portfolio,
+  // but remove it from the student's navigation without deleting records.
+  const musicTab = document.querySelector('.tab[data-view="music"]');
+  if (musicTab) musicTab.hidden = !enabled;
   if (enabled) {
     document.querySelectorAll('.view').forEach(view => view.classList.toggle('active', view.id === 'mom'));
     document.querySelectorAll('.tab').forEach(tab => tab.classList.toggle('active', tab === parentTab));
