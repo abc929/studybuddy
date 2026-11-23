@@ -419,8 +419,11 @@ function setupSingapore4AAssessment(){
  const label=document.createElement('label');label.textContent='Choose a chapter';label.htmlFor='sgChapter';
  const select=document.createElement('select');select.id='sgChapter';select.className='select';
  singapore4AChapters.forEach((ch,i)=>{const o=document.createElement('option');o.value=i;o.textContent='Chapter '+(i+1)+': '+ch[0];select.append(o)});
+ const chapterTitle=i=>'Singapore Dimensions Math 4A · Chapter '+(i+1)+': '+singapore4AChapters[i][0];
+ const completedCheck=i=>(window.cloudberryStateApi?.exportState()?.chapterAssessments||[]).find(t=>t.chapter===chapterTitle(i));
+ const updateOptions=()=>{Array.from(select.options).forEach((option,i)=>{const done=completedCheck(i);option.textContent='Chapter '+(i+1)+': '+singapore4AChapters[i][0]+(done?' · Completed · '+done.pct+'%':'');option.style.color=done?'#777':'';});};
  select.value='1';const content=document.createElement('div');const results=document.createElement('div');results.setAttribute('aria-live','polite');
- let workspaces=[];const make=()=>{content.replaceChildren();results.textContent='';workspaces=[];singapore4AChapters[+select.value][1].forEach((item,i)=>{
+ let workspaces=[];const make=()=>{content.replaceChildren();results.textContent='';workspaces=[];updateOptions();const done=completedCheck(+select.value);if(done){const notice=document.createElement('div');notice.style.cssText='padding:18px;border:1px solid #ddd;background:#f1f1f1;color:#666;border-radius:14px';notice.textContent='✓ Chapter check completed · Grade: '+done.pct+'% ('+done.correct+'/'+done.total+'). Saved in your portfolio. Ask Mom if you need another attempt.';content.append(notice);return;}singapore4AChapters[+select.value][1].forEach((item,i)=>{
  const wrap=document.createElement('div');wrap.style.cssText='margin:12px 0;padding:12px;border:1px solid #ead4df;border-radius:12px';
  const q=document.createElement('label');q.textContent=(i+1)+'. '+item[0];q.htmlFor='sgAnswer'+i;q.style.display='block';
  const input=document.createElement('input');input.className='input';input.id='sgAnswer'+i;input.placeholder='Your answer';input.autocomplete='off';
@@ -431,10 +434,10 @@ function setupSingapore4AAssessment(){
  const answers=rows.map((q,i)=>({question:q[0],selected:inputs[i].value.trim(),workImage:workspaces[i]?workspaces[i]():null,correct:q[1],hint:q[2],isCorrect:normalize(inputs[i].value)===normalize(q[1])}));
  const correct=answers.filter(a=>a.isCorrect).length,pct=correct*20;
  const api=window.cloudberryStateApi;if(api){const state=api.exportState();state.chapterAssessments=state.chapterAssessments||[];state.chapterAssessments.unshift({chapter:'Singapore Dimensions Math 4A · Chapter '+(index+1)+': '+chapter[0],pct,correct,total:5,answers,at:new Date().toISOString()});state.chapterAssessments=state.chapterAssessments.slice(0,100);api.importState(state);window.dispatchEvent(new CustomEvent('cloudberry:save',{detail:JSON.parse(JSON.stringify(state))}))}
- results.replaceChildren();const h=document.createElement('h3');h.textContent='Score: '+pct+'% ('+correct+'/5)';results.append(h);
+ updateOptions();results.replaceChildren();const h=document.createElement('h3');h.textContent='Score: '+pct+'% ('+correct+'/5)';results.append(h);
  answers.forEach((a,i)=>{const p=document.createElement('p');p.style.whiteSpace='pre-line';p.textContent=(a.isCorrect?'✓ ':'✗ ')+(i+1)+'. '+a.question+'\\nYour answer: '+a.selected+'\\nExpected: '+a.correct+(a.isCorrect?'':'\\nTip: '+a.hint);results.append(p)});
  };content.append(button)};
- select.addEventListener('change',make);section.append(label,select,content,results);plan.append(section);make();
+ select.addEventListener('change',make);section.append(label,select,content,results);const collapsed=document.createElement('details');collapsed.style.marginBottom='16px';const summary=document.createElement('summary');summary.textContent='🧮 Chapter checks · Open when assigned';summary.style.cssText='cursor:pointer;font-weight:700;padding:14px;border:1px solid #ddd;border-radius:12px';collapsed.append(summary,section);plan.append(collapsed);window.addEventListener('cloudberry:remote-update',make);make();
 }
 setupSingapore4AAssessment();
 function renderChapterAssessments(){
