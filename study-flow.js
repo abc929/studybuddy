@@ -159,6 +159,7 @@ if(st&&api){st.subjectFlow=flow;api.importState(st);window.dispatchEvent(new Cus
 return true;
 }
 function itemForDate(subject,date){return subject==='bju'?item('bju',date).assigned:item(subject,date);}
+function assignedReading(date,topic){var science=['Forests as Living Watersheds','Trees, Runoff, and Flooding','Where Stormwater Goes','Habitat Fragmentation and Adaptation','Wildlife in Changing Habitats','Follow a Drop of Water','Designing a Fair Test'];var social=['How Local Decisions Are Made','Rivers and Communities'];var dates=['2026-11-25','2026-11-30','2026-12-01','2026-12-02','2026-12-03','2026-12-04','2026-12-07'];var i=dates.indexOf(date);if(topic==='science')return science[i]||'';return ({'2026-11-25':social[0],'2026-11-30':social[1]})[date]||'';}window.cloudberryAssignedReading=assignedReading;
 function mount(box){
 function render(){
  var now=new Date(),date=iso(now),weekend=!isSchool(now),coop=now.getDay()===2&&date>='2027-01-19';
@@ -173,10 +174,10 @@ function render(){
  ['meds','💊','','AM medicines — mark only after taken',null],
  ['tg','📖','11:35',item('tg',date).title,(item('tg',date).idx>=8?'#clockmaker':item('tg',date).url)],
  ['bju','📚','12:10',item('bju',date).title,'#bju-tab'],
- ['science','🔬','12:35','Miacademy Structures of Science · assigned lesson','https://miacademy.co/login?Flavor=Practice&isAssignmentMode=False'],
+ ['science','🔬','12:35',assignedReading(date,'science')?'Science reading · '+assignedReading(date,'science'):'Miacademy Structures of Science · assigned lesson','#science-tab'],
  ['lunch','🥗','1:15','Lunch and break',null],
  ['math','➗','2:00',item('math',date).title,'#math'],
- ['enrichment',coop?'🧪':'🌎','2:45',coop?'Co-op: science, cryptology, Strong Minds and clay':(now.getDay()===1||now.getDay()===3||now.getDay()===5?'Miacademy social studies':'Science Fair · Saving the Trees'),'#science-fair'],
+ ...(assignedReading(date,'social')?[['enrichment','🌎','2:45','Social Studies reading · '+assignedReading(date,'social'),'#social-tab']]:[1,3,5].includes(now.getDay())?[['enrichment','🌎','2:45','Miacademy social studies','#social-tab']]:[]),
  ['pe','🏃','3:15','PE and movement',null],
  ['creative','🎨','','Optional creative choice',null]
  ];
