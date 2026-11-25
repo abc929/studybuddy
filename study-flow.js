@@ -171,7 +171,7 @@ function render(){
  ['prayer','🙏','11:00','Prayer and daily goals',null],
  ['breakfast','🍽️','11:15','Breakfast',null],
  ['meds','💊','','AM medicines — mark only after taken',null],
- ['tg','📖','11:35',item('tg',date).title,item('tg',date).url],
+ ['tg','📖','11:35',item('tg',date).title,(item('tg',date).idx>=8?'#clockmaker':item('tg',date).url)],
  ['bju','📚','12:10',item('bju',date).title,'#bju-tab'],
  ['science','🔬','12:35','Miacademy Structures of Science · assigned lesson','https://miacademy.co/login?Flavor=Practice&isAssignmentMode=False'],
  ['lunch','🥗','1:15','Lunch and break',null],
@@ -189,7 +189,7 @@ function render(){
  var label=document.createElement('span');label.style.flex='1';label.style.overflowWrap='anywhere';
  var words=(line[2]?line[2]+' · ':'')+line[1]+' '+line[3]+(id==='math'&&isPractice(item('math',date).idx)?(practicePassed(item('math',date).idx)?' · ✅ Practice passed':' · 🔒 70% required'):'');
  if(line[4]){
-  var a=document.createElement('a');a.textContent=words+' ↗';a.href=line[4].startsWith('#')?line[4]:line[4];if(line[4].startsWith('#')){a.onclick=function(e){e.preventDefault();document.querySelector('.tab[data-view="'+line[4].slice(1)+'"]')?.click();};}else{a.target='_blank';a.rel='noopener noreferrer';}label.append(a);
+  var a=document.createElement('a');a.textContent=words+' ↗';a.href=line[4].startsWith('#')?line[4]:line[4];if(line[4].startsWith('#')){a.onclick=function(e){e.preventDefault();document.querySelector('.tab[data-view="'+line[4].slice(1)+'"]')?.click();requestAnimationFrame(function(){var target=document.getElementById(id==='math'?'flowMathLesson':id==='bju'?'bjuReading':id==='tg'?'clockmaker':line[4].slice(1));target?.scrollIntoView({block:'start',behavior:'smooth'});});};}else{a.target='_blank';a.rel='noopener noreferrer';}label.append(a);
  }else label.textContent=words;
  c.onchange=function(){
    if(isSubject){var accepted=saveCheck(id,date,c.checked);if(accepted===false){c.checked=false;var reminder=document.getElementById('practiceGateMessage');if(!reminder){reminder=document.createElement('p');reminder.id='practiceGateMessage';reminder.className='notice';box.insertBefore(reminder,list);}reminder.textContent='Math practice is still locked. Complete the in-app assessment and earn at least 70% before checking this lesson finished.';return;}}
