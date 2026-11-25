@@ -144,8 +144,8 @@ function clone(obj){return JSON.parse(JSON.stringify(obj));}
 function data(){var api=window.cloudberryStateApi;var state=api&&api.exportState();var stored={};try{stored=JSON.parse(localStorage.getItem(KEY)||'{}')||{};}catch(e){}
 return state&&state.subjectFlow&&typeof state.subjectFlow==='object'?state.subjectFlow:stored;}
 function doneMap(){var d=data();return d.done||{math:{},tg:{},bju:{}};}
-function currentIndex(subject,date){var marks=doneMap()[subject]||{};if(subject==='math'&&date==='2026-11-24')return 1;if(subject==='math'&&date==='2026-11-25')return 3;var i=0;while(i<17&&marks[i]&&marks[i]<date&&(!isPractice(i)||practicePassed(i)))i++;return Math.min(i,16);}
-function item(subject,date){date=date||iso();var idx=currentIndex(subject,date);if(subject==='math')return {idx:idx,title:'Singapore Dimensions Math 4A · '+mathSteps[idx][0]+': '+mathSteps[idx][1],topic:mathSteps[idx][1],notes:mathSteps[idx][2]};if(subject==='tg')return {idx:idx,title:'The Good and the Beautiful Grade 5 · Lesson '+(13+idx)+' · Writing Option 1',url:'https://courses.goodandbeautiful.com/'};
+function currentIndex(subject,date){var marks=doneMap()[subject]||{};if(subject==='math'&&date==='2026-11-24')return 1;if(date==='2026-11-25'){if(subject==='math'||subject==='tg')return 25;if(subject==='bju')return 11;}var i=0;while(i<17&&marks[i]&&marks[i]<date&&(!isPractice(i)||practicePassed(i)))i++;return Math.min(i,16);}
+function item(subject,date){date=date||iso();var idx=currentIndex(subject,date);if(date==='2026-11-25'&&subject==='math')return {idx:idx,title:'Singapore Dimensions Math 4A · Chapter 2 Review',topic:'Estimation and rounding',notes:'Complete the Chapter 2 review in your textbook and show your work.'};if(date==='2026-11-25'&&subject==='tg')return {idx:idx,title:'The Good and the Beautiful Grade 5 · Unit 1 Review',url:'https://courses.goodandbeautiful.com/'};if(subject==='math')return {idx:idx,title:'Singapore Dimensions Math 4A · '+mathSteps[idx][0]+': '+mathSteps[idx][1],topic:mathSteps[idx][1],notes:mathSteps[idx][2]};if(subject==='tg')return {idx:idx,title:'The Good and the Beautiful Grade 5 · Lesson '+(13+idx)+' · Writing Option 1',url:'https://courses.goodandbeautiful.com/'};
 var b=bjuSteps[idx];return {idx:idx,title:'BJU Reading 5 · '+b[0]+' · p. '+b[1],story:b[0],page:b[1],genre:b[2],assigned:[''+date,b[0],b[1],b[2]]};}
 function checked(subject,date){var x=item(subject,date),marks=doneMap()[subject]||{};return marks[x.idx]===date;}
 function saveCheck(subject,date,isDone){
@@ -232,6 +232,7 @@ var attempts={};try{attempts=JSON.parse(localStorage.getItem('cloudberry-math-at
 attempts={...attempts,...(window.cloudberryStateApi?.exportState()?.mathPracticeAttempts?.[idx]?.latest||{})};
 panel.replaceChildren();
 var h=document.createElement('h2');h.textContent='🔢 '+i.title;panel.append(h);
+if(d==='2026-11-25'){var review=document.createElement('p');review.textContent=i.notes+' Check Math finished in Today when complete.';panel.append(review);return;}
 var p=document.createElement('p');p.textContent='Follow the Singapore textbook examples. '+i.notes+'. Work through FIVE independent questions below. Checking your Math lesson in Today is the only way to unlock the next lesson.';panel.append(p);
 // Video of the lesson stays with the current topic if she needs another day.
 var lessonVideos=mathVideos[idx]||mathVideos[mathVideos.length-1];
