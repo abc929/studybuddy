@@ -10,7 +10,7 @@ var mathSteps = [
  ['4A Ch 3, Lesson 2','Common multiples','5 problems; then a brief estimation check'],
  ['4A Ch 3, Lessons 3 & 5','Factors and common factors','Both lessons together as requested'],
  ['4A Ch 3, Lesson 4','Prime and composite numbers','Use factor pairs to classify numbers'],
- ['4A Ch 4, Lessons 1 & 2','Textbook lessons 1 and 2','Work both Singapore lesson examples'],
+ ['4A Ch 3, Review','Multiples and factors','Complete the textbook Chapter 3 review; show your work.'],
  ['4A Ch 4, Lesson 3','Textbook lesson 3','Practice multiplication and show steps'],
  ['4A Ch 4, Practice','Estimation and multiplication','Mixed review'],
  ['4A Ch 4, Lesson 5','Textbook lesson 5','Follow the textbook and demonstrate understanding'],
@@ -30,7 +30,7 @@ var mathVideos = [
  [['Math Antics • Least Common Multiple (basic method)','https://www.youtube.com/watch?v=Nu6AC6X3_E4']],
  [['Math Antics • Greatest Common Factor','https://www.youtube.com/watch?v=CUEOL3_Wm3Y'],['Math Antics • Prime Factorization','https://www.youtube.com/watch?v=XGbOiYhHY2c']],
  [['Khan Academy • Prime and composite numbers','https://www.youtube.com/watch?v=3h4UK62Qrbo']],
- [['Math Antics • Multi-Digit Multiplication, Part 1','https://www.youtube.com/watch?v=FJ5qLWP3Fqo']],
+ [['Math Antics • Greatest Common Factor','https://www.youtube.com/watch?v=CUEOL3_Wm3Y']],
  [['Math Antics • Multi-Digit Multiplication, Part 1','https://www.youtube.com/watch?v=FJ5qLWP3Fqo']],
  [['Math Antics • Rounding','https://www.youtube.com/watch?v=fd-E18EqSVk'],['Math Antics • Multi-Digit Multiplication, Part 1','https://www.youtube.com/watch?v=FJ5qLWP3Fqo']],
  [['Math Antics • Multi-Digit Multiplication, Part 2','https://www.youtube.com/watch?v=RVYwunbpMHA']],
@@ -144,7 +144,7 @@ function clone(obj){return JSON.parse(JSON.stringify(obj));}
 function data(){var api=window.cloudberryStateApi;var state=api&&api.exportState();var stored={};try{stored=JSON.parse(localStorage.getItem(KEY)||'{}')||{};}catch(e){}
 return state&&state.subjectFlow&&typeof state.subjectFlow==='object'?state.subjectFlow:stored;}
 function doneMap(){var d=data();return d.done||{math:{},tg:{},bju:{}};}
-function currentIndex(subject,date){var marks=doneMap()[subject]||{};var i=0;while(i<17&&marks[i]&&marks[i]<date&&(!isPractice(i)||practicePassed(i)))i++;return Math.min(i,16);}
+function currentIndex(subject,date){var marks=doneMap()[subject]||{};if(subject==='math'&&date==='2026-11-24')return 1;if(subject==='math'&&date==='2026-11-25')return 3;var i=0;while(i<17&&marks[i]&&marks[i]<date&&(!isPractice(i)||practicePassed(i)))i++;return Math.min(i,16);}
 function item(subject,date){date=date||iso();var idx=currentIndex(subject,date);if(subject==='math')return {idx:idx,title:'Singapore Dimensions Math 4A · '+mathSteps[idx][0]+': '+mathSteps[idx][1],topic:mathSteps[idx][1],notes:mathSteps[idx][2]};if(subject==='tg')return {idx:idx,title:'The Good and the Beautiful Grade 5 · Lesson '+(13+idx)+' · Writing Option 1',url:'https://courses.goodandbeautiful.com/'};
 var b=bjuSteps[idx];return {idx:idx,title:'BJU Reading 5 · '+b[0]+' · p. '+b[1],story:b[0],page:b[1],genre:b[2],assigned:[''+date,b[0],b[1],b[2]]};}
 function checked(subject,date){var x=item(subject,date),marks=doneMap()[subject]||{};return marks[x.idx]===date;}
@@ -161,7 +161,7 @@ return true;
 function itemForDate(subject,date){return subject==='bju'?item('bju',date).assigned:item(subject,date);}
 function mount(box){
 function render(){
- var now=new Date(),date=iso(now),weekend=!isSchool(now),coop=now.getDay()===2;
+ var now=new Date(),date=iso(now),weekend=!isSchool(now),coop=now.getDay()===2&&date>='2027-01-19';
  box.replaceChildren();
  var summary=document.createElement('p');
  summary.innerHTML='<b>'+new Intl.DateTimeFormat('en-US',{weekday:'long',month:'long',day:'numeric'}).format(now)+'</b> · Gabriella checks each item when finished';
